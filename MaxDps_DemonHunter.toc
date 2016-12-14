@@ -1,0 +1,8 @@
+## Title: MaxDps_DemonHunter
+## Version: 1.0
+## Author: Kaminaris
+## Interface: 70100
+## Dependencies: MaxDps
+## LoadOnDemand: 1
+
+main.lua
