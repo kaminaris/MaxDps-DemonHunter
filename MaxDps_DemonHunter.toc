@@ -1,5 +1,5 @@
 ## Title: MaxDps_DemonHunter
-## Version: 1.0
+## Version: 7.1.0.1
 ## Author: Kaminaris
 ## Interface: 70100
 ## Dependencies: MaxDps
