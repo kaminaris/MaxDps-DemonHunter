@@ -42,29 +42,10 @@ local _FieryBrand = 204021;
 local _DemonSpikes = 203720;
 local _MetamorphosisV = 187827;
 local _EmpowerWards = 218256;
-
--- Talents
-local _isDemonic = false;
-local _isFelEruption = false;
-local _isFirstBlood = false;
-local _isFelblade = false;
-local _isBloodlet = false;
-local _isFelBarrage = false;
-local _isDemonBlades = false;
-local _isFelDevastation = false;
+local _Sever = 235964;
 
 MaxDps.DemonHunter = {};
-
 MaxDps.DemonHunter.CheckTalents = function()
-	MaxDps:CheckTalents();
-	_isDemonic = MaxDps:HasTalent(_Demonic);
-	_isFelEruption = MaxDps:HasTalent(_FelEruption);
-	_isFirstBlood = MaxDps:HasTalent(_FirstBlood);
-	_isFelblade = MaxDps:HasTalent(_Felblade);
-	_isBloodlet = MaxDps:HasTalent(_Bloodlet);
-	_isFelBarrage = MaxDps:HasTalent(_FelBarrage);
-	_isDemonBlades = MaxDps:HasTalent(_DemonBlades);
-	_isFelDevastation = MaxDps:HasTalent(_FelDevastation);
 end
 
 function MaxDps:EnableRotationModule(mode)
@@ -80,9 +61,7 @@ function MaxDps:EnableRotationModule(mode)
 end
 
 -- Demon Hunter Havoc reworked by Ryzux
-function MaxDps.DemonHunter.Havoc()
-	local timeShift, currentSpell, gcd = MaxDps:EndCast();
-
+function MaxDps.DemonHunter.Havoc(_, timeShift, currentSpell, gcd, talents)
 	local fury = UnitPower('player', SPELL_POWER_FURY);
 	local furyMax = UnitPowerMax('player', SPELL_POWER_FURY);
 
@@ -106,8 +85,11 @@ function MaxDps.DemonHunter.Havoc()
 	local tg, tgCharges = MaxDps:SpellCharges(_ThrowGlaive, timeShift);
 	local fb, fbCharges = MaxDps:SpellCharges(_FelBarrage, timeShift);
 
-	MaxDps:GlowCooldown(_FelRush, MaxDps:SpellCharges(_FelRush, timeShift) and not momentum and fury >= 40);
-	MaxDps:GlowCooldown(_VengefulRetreat, MaxDps:SpellAvailable(_VengefulRetreat, timeShift) and not momentum);
+	if talents[_Momentum] then
+		MaxDps:GlowCooldown(_FelRush, MaxDps:SpellCharges(_FelRush, timeShift) and not momentum and fury >= 40);
+		MaxDps:GlowCooldown(_VengefulRetreat, MaxDps:SpellAvailable(_VengefulRetreat, timeShift) and not momentum);
+	end
+
 	MaxDps:GlowCooldown(_Metamorphosis, MaxDps:SpellAvailable(_Metamorphosis, timeShift));
 	MaxDps:GlowCooldown(_ChaosBlades, MaxDps:SpellAvailable(_ChaosBlades, timeShift));
 
@@ -117,37 +99,37 @@ function MaxDps.DemonHunter.Havoc()
 	end
 
 	-- #4. Fel Barrage with 5 Charges and Momentum
-	if _isFelBarrage and fbCharges >= 5 and momentum then
+	if talents[_FelBarrage] and fbCharges >= 5 and (momentum or not talents[_Momentum]) then
 		return _FelBarrage;
 	end
 
 	-- #5. Demonic
-	if _isDemonic and eye and fury >= 48 then
+	if talents[_Demonic] and eye and fury >= 50 then
 		return _EyeBeam;
 	end
 
 	-- #6. First Blood
-	if _isFirstBlood and MaxDps:SpellAvailable(bladeDance, timeShift) and fury >= 35 then
+	if talents[_FirstBlood] and MaxDps:SpellAvailable(bladeDance, timeShift) and fury >= 35 then
 		return bladeDance;
 	end
 
 	-- #7. Fel Eruption
-	if _isFelEruption and MaxDps:SpellAvailable(_FelEruption, timeShift) and fury >= 20 then
+	if talents[_FelEruption] and MaxDps:SpellAvailable(_FelEruption, timeShift) and fury >= 20 then
 		return _FelEruption;
 	end
 
 	-- #8. Felblade
-	if _isFelblade and MaxDps:SpellAvailable(_Felblade, timeShift) and furyMax - fury > 30 then
+	if talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift) and furyMax - fury > 30 then
 		return _Felblade;
 	end
 
 	-- #9. Bloodlet on Momentum
-	if _isBloodlet and tg and momentum and not bl then
+	if talents[_Bloodlet] and tg and (momentum or not talents[_Momentum]) and not bl then
 		return _ThrowGlaive;
 	end
 
 	-- #10. Eye Beam
-	if eye and fury >= 48 then
+	if eye and fury >= 50 then
 		return _EyeBeam;
 	end
 
@@ -167,11 +149,11 @@ function MaxDps.DemonHunter.Havoc()
 	end
 
 	-- #12. Fel Barrage with 4 Charges and Momentum
-	if _isFelBarrage and fbCharges >= 4 and momentum then
+	if talents[_FelBarrage] and fbCharges >= 4 and (momentum or not talents[_Momentum]) then
 		return _FelBarrage;
 	end
 
-	if _isDemonBlades then
+	if talents[_DemonBlades] then
 		if tgCharges > 0 then
 			return _ThrowGlaive;
 		else
@@ -183,9 +165,7 @@ function MaxDps.DemonHunter.Havoc()
 end
 
 -- Demon Hunter Vengeance by Ryzux
-function MaxDps.DemonHunter.Vengeance()
-	local timeShift, currentSpell, gcd = MaxDps:EndCast();
-
+function MaxDps.DemonHunter.Vengeance(_, timeShift, currentSpell, gcd, talents)
 	local pain = UnitPower('player', SPELL_POWER_PAIN);
 	local painMax = UnitPowerMax('player', SPELL_POWER_PAIN);
 
@@ -202,7 +182,7 @@ function MaxDps.DemonHunter.Vengeance()
 	end
 
 	-- #2. Fel Devastation on cooldown
-	if _isFelDevastation and MaxDps:SpellAvailable(_FelDevastation, timeShift) and pain >= 30 then
+	if talents[_FelDevastation] and MaxDps:SpellAvailable(_FelDevastation, timeShift) and pain >= 30 then
 		return _FelDevastation;
 	end
 
@@ -217,7 +197,7 @@ function MaxDps.DemonHunter.Vengeance()
 	end
 
 	-- #5. Felblade on cooldown
-	if _isFelblade and MaxDps:SpellAvailable(_Felblade, timeShift) then
+	if talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift) then
 		return _Felblade;
 	end
 
@@ -227,5 +207,9 @@ function MaxDps.DemonHunter.Vengeance()
 	end
 
 	-- #7. Shear as a filler
-	return _Shear;
+	if meta then
+		return _Sever;
+	else
+		return _Shear;
+	end
 end
