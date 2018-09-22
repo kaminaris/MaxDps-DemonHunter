@@ -10,6 +10,7 @@ local _DemonBlades = 203555;
 local _ChaosStrike = 162794;
 local _VengefulRetreat = 198793;
 local _Momentum = 208628;
+local _MomentumTalent = 206476;
 local _FelRush = 195072;
 local _FelBarrage = 258925;
 local _DarkSlash = 258860;
@@ -26,24 +27,20 @@ local _ThrowGlaive = 185123;
 local _FirstBlood = 206416;
 local _Demonic = 213410;
 local _BlindFury = 203550;
-local _TrailofRuin = 258881;
-local _DemonicAppetite = 206478;
-local _InsatiableHunger = 258876;
-local _CycleofHatred = 258887;
 local _FelMastery = 192939;
 local _TrailOfRuin = 258881;
 
 -- Vengeance
 
 function DemonHunter:Enable()
-	MaxDps:Print(MaxDps.Colors.Info .. 'Demon Hunter [Havoc, Vengeance]');
+	MaxDps:Print(MaxDps.Colors.Info .. 'Demon Hunter [Havoc]');
 
 	if MaxDps.Spec == 1 then
 		MaxDps.NextSpell = DemonHunter.Havoc;
 	elseif MaxDps.Spec == 2 then
 		MaxDps.NextSpell = DemonHunter.Vengeance;
-	end ;
-	Expect:Register();
+	end
+
 	return true;
 end
 
@@ -83,10 +80,10 @@ function DemonHunter:Havoc(timeShift, currentSpell, gcd, talents)
 			self.prevMetamorphosisRemains = buffMetamorphosisRemains;
 		end
 	end
-print(buffMomentumUp)
+
 	-- Cooldowns
-	if talents[_Momentum] then
-		MaxDps:GlowCooldown(_FelRush, not buffMomentumUp and MaxDps:SpellCharges(_FelRush, timeShift) and fury >= 40);
+	if talents[_MomentumTalent] then
+		MaxDps:GlowCooldown(_FelRush, not buffMomentumUp and MaxDps:SpellAvailable(_FelRush, timeShift));
 		MaxDps:GlowCooldown(_VengefulRetreat, not buffMomentumUp and MaxDps:SpellAvailable(_VengefulRetreat, timeShift));
 	end
 
@@ -106,7 +103,7 @@ print(buffMomentumUp)
 	local varPoolingForBladeDance = varBladeDance and (fury < 75 - (talents[_FirstBlood] and 1 or 0) * 20);
 	local varWaitingForDarkSlash = talents[_DarkSlash] and not varPoolingForBladeDance and
 		not varPoolingForMeta and cooldownDarkSlashReady;
-	local varWaitingForMomentum = talents[_Momentum] and not buffMomentumUp;
+	local varWaitingForMomentum = talents[_MomentumTalent] and not buffMomentumUp;
 
 
 	-- Dark slash rotation
@@ -120,13 +117,13 @@ print(buffMomentumUp)
 		end
 	end
 
-	local cooldownFelBarrageReady = MaxDps:SpellAvailable(_FelBarrage, timeShift);
+	local canFelBarrage = talents[_FelBarrage] and MaxDps:SpellAvailable(_FelBarrage, timeShift);
 	local canFelBlade = talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift);
 	local canBladeDance = MaxDps:SpellAvailable(_BladeDance, timeShift) and
 		fury >= (35 - (talents[_FirstBlood] and 20 or 0));
 
 	if talents[_Demonic] then
-		if cooldownFelBarrageReady then
+		if canFelBarrage then
 			return _FelBarrage;
 		end
 
@@ -143,6 +140,10 @@ print(buffMomentumUp)
 		if canBladeDance and varBladeDance and not cooldownMetamorphosisReady and
 			(cooldownEyeBeamRemains > 5) then -- (5 - azerite.revolving_blades.rank * 3)
 			return bladeDance;
+		end
+
+		if talents[_ImmolationAura] and MaxDps:SpellAvailable(_ImmolationAura, timeShift) then
+			return _ImmolationAura;
 		end
 
 		if canFelBlade and (fury < 40 or (not buffMetamorphosisUp and furyDeficit >= 40)) then
@@ -164,12 +165,16 @@ print(buffMomentumUp)
 			return chaosStrike;
 		end
 	else
-		if cooldownFelBarrageReady and not varWaitingForMomentum and (targets > 1) then
+		if canFelBarrage and not varWaitingForMomentum and (targets > 1) then
 			return _FelBarrage;
 		end
 
 		if canBladeDance and buffMetamorphosisUp and varBladeDance then
 			return bladeDance;
+		end
+
+		if talents[_ImmolationAura] and MaxDps:SpellAvailable(_ImmolationAura, timeShift) then
+			return _ImmolationAura;
 		end
 
 		if canEyeBeam and targets > 1 and not varWaitingForMomentum then
