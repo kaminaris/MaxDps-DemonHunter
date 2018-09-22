@@ -1,160 +1,217 @@
+if not MaxDps then
+	return ;
+end
+
+local DemonHunter = MaxDps:NewModule('DemonHunter');
+
 -- Havoc
 local _DemonsBite = 162243;
 local _DemonBlades = 203555;
 local _ChaosStrike = 162794;
 local _VengefulRetreat = 198793;
-local _Prepared = 203551;
-local _Momentum = 206476;
+local _Momentum = 208628;
 local _FelRush = 195072;
-local _FelMastery = 192939;
+local _FelBarrage = 258925;
+local _DarkSlash = 258860;
 local _EyeBeam = 198013;
-local _Demonic = 213410;
-local _FelEruption = 211881;
-local _FuryoftheIllidari = 201467;
+local _Nemesis = 206491;
+local _Metamorphosis = 191427;
+local _MetamorphosisAura = 162264;
 local _BladeDance = 188499;
 local _DeathSweep = 210152;
-local _FirstBlood = 206416;
-local _Felblade = 213241;
-local _ThrowGlaive = 204157;
-local _Bloodlet = 206473;
-local _FelBarrage = 211053;
+local _ImmolationAura = 258920;
+local _Felblade = 232893;
 local _Annihilation = 201427;
-local _AnguishoftheDeceiver = 201473;
-local _Metamorphosis = 191427;
-local _ChaosBlades = 211048;
-local _ChaosCleave = 206475;
+local _ThrowGlaive = 185123;
+local _FirstBlood = 206416;
+local _Demonic = 213410;
+local _BlindFury = 203550;
+local _TrailofRuin = 258881;
 local _DemonicAppetite = 206478;
-local _Nemesis = 206491;
-local _Blur = 198589;
-local _DemonSpeed = 201469;
-local _UnleashedDemons = 201460;
-local _ConsumeMagic = 183752;
+local _InsatiableHunger = 258876;
+local _CycleofHatred = 258887;
+local _FelMastery = 192939;
+local _TrailOfRuin = 258881;
 
 -- Vengeance
-local _SoulCarver = 207407;
-local _FelDevastation = 212084;
-local _SoulCleave = 228477;
-local _ImmolationAura = 178740;
-local _Shear = 203783;
-local _SigilOfFlame = 204596;
-local _InfernalStrike = 189110;
-local _FieryBrand = 204021;
-local _DemonSpikes = 203720;
-local _MetamorphosisV = 187827;
-local _EmpowerWards = 218256;
-local _Sever = 235964;
 
-MaxDps.DemonHunter = {};
-MaxDps.DemonHunter.CheckTalents = function()
+function DemonHunter:Enable()
+	MaxDps:Print(MaxDps.Colors.Info .. 'Demon Hunter [Havoc, Vengeance]');
+
+	if MaxDps.Spec == 1 then
+		MaxDps.NextSpell = DemonHunter.Havoc;
+	elseif MaxDps.Spec == 2 then
+		MaxDps.NextSpell = DemonHunter.Vengeance;
+	end ;
+	Expect:Register();
+	return true;
 end
 
-function MaxDps:EnableRotationModule(mode)
-	mode = mode or 1;
-	MaxDps.Description = "Demon Hunter [Havoc, Vengeance]";
-	MaxDps.ModuleOnEnable = MaxDps.DemonHunter.CheckTalents;
-	if mode == 1 then
-		MaxDps.NextSpell = MaxDps.DemonHunter.Havoc;
-	end;
-	if mode == 2 then
-		MaxDps.NextSpell = MaxDps.DemonHunter.Vengeance;
-	end;
-end
+function DemonHunter:Havoc(timeShift, currentSpell, gcd, talents)
+	local fury = UnitPower('player', Enum.PowerType.Fury);
+	local furyMax = UnitPowerMax('player', Enum.PowerType.Fury);
+	local furyDeficit = furyMax - fury;
 
--- Demon Hunter Havoc reworked by Ryzux
-function MaxDps.DemonHunter.Havoc(_, timeShift, currentSpell, gcd, talents)
-	local fury = UnitPower('player', SPELL_POWER_FURY);
-	local furyMax = UnitPowerMax('player', SPELL_POWER_FURY);
+	local chaosStrike = MaxDps:FindSpell(_Annihilation) and _Annihilation or _ChaosStrike;
+	local bladeDance = MaxDps:FindSpell(_DeathSweep) and _DeathSweep or _BladeDance;
 
-	local meta = MaxDps:Aura(_Metamorphosis, timeShift);
+	-- Auras
+	local cooldownNemesisReady, cooldownNemesisRemains = MaxDps:SpellAvailable(_Nemesis, timeShift);
+	local cooldownMetamorphosisReady, cooldownMetamorphosisRemains = MaxDps:SpellAvailable(_Metamorphosis, timeShift);
+	local cooldownDarkSlashReady, cooldownDarkSlashRemains = MaxDps:SpellAvailable(_DarkSlash, timeShift);
+	local cooldownBladeDanceReady, cooldownBladeDanceRemains = MaxDps:SpellAvailable(_BladeDance, timeShift);
+	local cooldownEyeBeamReady, cooldownEyeBeamRemains = MaxDps:SpellAvailable(_EyeBeam, timeShift);
+	local canEyeBeam = cooldownEyeBeamReady and fury >= 30;
 
-	local bladeDance = _BladeDance;
-	if meta then
-		bladeDance = _DeathSweep;
+
+	local buffMomentumUp, buffMomentumStack, buffMomentumRemains = MaxDps:Aura(_Momentum, timeShift);
+	local buffMetamorphosisUp, buffMetamorphosisStack, buffMetamorphosisRemains = MaxDps:Aura(_MetamorphosisAura, timeShift);
+	local buffPreparedUp, buffPreparedStack, buffPreparedRemains = MaxDps:Aura(_Prepared, timeShift);
+	local debuffDarkSlashUp, debuffDarkSlashStack, debuffDarkSlashRemains = MaxDps:TargetAura(_DarkSlash, timeShift);
+
+	if talents[_Demonic] then
+		-- it was extended at some point
+		if self.prevMetamorphosisRemains and buffMetamorphosisRemains > self.prevMetamorphosisRemains then
+			self.buffMetamorphosisExtended = true;
+		end
+
+		-- once it goes down, flag down
+		if not buffMetamorphosisUp then
+			self.buffMetamorphosisExtended = false;
+			self.prevMetamorphosisRemains = nil;
+		else
+			self.prevMetamorphosisRemains = buffMetamorphosisRemains;
+		end
 	end
-
-	local chaosStrike = _ChaosStrike;
-	if meta then
-		chaosStrike = _Annihilation;
-	end
-
-	local momentum = MaxDps:Aura(_Momentum, timeShift);
-
-	local bl = MaxDps:TargetAura(_Bloodlet, timeShift + 2);
-
-	local eye = MaxDps:SpellAvailable(_EyeBeam, timeShift);
-	local tg, tgCharges = MaxDps:SpellCharges(_ThrowGlaive, timeShift);
-	local fb, fbCharges = MaxDps:SpellCharges(_FelBarrage, timeShift);
-
+print(buffMomentumUp)
+	-- Cooldowns
 	if talents[_Momentum] then
-		MaxDps:GlowCooldown(_FelRush, MaxDps:SpellCharges(_FelRush, timeShift) and not momentum and fury >= 40);
-		MaxDps:GlowCooldown(_VengefulRetreat, MaxDps:SpellAvailable(_VengefulRetreat, timeShift) and not momentum);
+		MaxDps:GlowCooldown(_FelRush, not buffMomentumUp and MaxDps:SpellCharges(_FelRush, timeShift) and fury >= 40);
+		MaxDps:GlowCooldown(_VengefulRetreat, not buffMomentumUp and MaxDps:SpellAvailable(_VengefulRetreat, timeShift));
+	end
+
+	local nemesis, nemesisCd;
+	if talents[_Nemesis] then
+		MaxDps:GlowCooldown(_Nemesis, cooldownNemesisReady);
 	end
 
 	MaxDps:GlowCooldown(_Metamorphosis, MaxDps:SpellAvailable(_Metamorphosis, timeShift));
-	MaxDps:GlowCooldown(_ChaosBlades, MaxDps:SpellAvailable(_ChaosBlades, timeShift));
 
-	-- #3. Fury of the Illidari on CD
-	if MaxDps:SpellAvailable(_FuryoftheIllidari, timeShift) then
-		return _FuryoftheIllidari;
+	local targets = MaxDps:TargetsInRange(_ChaosStrike);
+
+	local varBladeDance = talents[_FirstBlood] or targets >= (3 - (talents[_TrailOfRuin] and 1 or 0));
+	local varWaitingForNemesis = not (not talents[_Nemesis] or cooldownNemesisReady or cooldownNemesisRemains > 60);
+	local varPoolingForMeta = not talents[_Demonic] and cooldownMetamorphosisRemains < 6 and
+		furyDeficit > 30 and (not varWaitingForNemesis or cooldownNemesisRemains < 10);
+	local varPoolingForBladeDance = varBladeDance and (fury < 75 - (talents[_FirstBlood] and 1 or 0) * 20);
+	local varWaitingForDarkSlash = talents[_DarkSlash] and not varPoolingForBladeDance and
+		not varPoolingForMeta and cooldownDarkSlashReady;
+	local varWaitingForMomentum = talents[_Momentum] and not buffMomentumUp;
+
+
+	-- Dark slash rotation
+	if talents[_DarkSlash] and (varWaitingForDarkSlash or debuffDarkSlashUp) then
+		if cooldownDarkSlashReady and fury >= 80 and (not varBladeDance or not cooldownBladeDanceReady) then
+			return _DarkSlash;
+		end
+
+		if fury >= 40 and debuffDarkSlashUp then
+			return chaosStrike;
+		end
 	end
 
-	-- #4. Fel Barrage with 5 Charges and Momentum
-	if talents[_FelBarrage] and fbCharges >= 5 and (momentum or not talents[_Momentum]) then
-		return _FelBarrage;
-	end
+	local cooldownFelBarrageReady = MaxDps:SpellAvailable(_FelBarrage, timeShift);
+	local canFelBlade = talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift);
+	local canBladeDance = MaxDps:SpellAvailable(_BladeDance, timeShift) and
+		fury >= (35 - (talents[_FirstBlood] and 20 or 0));
 
-	-- #5. Demonic
-	if talents[_Demonic] and eye and fury >= 50 then
-		return _EyeBeam;
-	end
+	if talents[_Demonic] then
+		if cooldownFelBarrageReady then
+			return _FelBarrage;
+		end
 
-	-- #6. First Blood
-	if talents[_FirstBlood] and MaxDps:SpellAvailable(bladeDance, timeShift) and fury >= 35 then
-		return bladeDance;
-	end
+		if canBladeDance and buffMetamorphosisUp and varBladeDance then
+			return bladeDance;
+		end
 
-	-- #7. Fel Eruption
-	if talents[_FelEruption] and MaxDps:SpellAvailable(_FelEruption, timeShift) and fury >= 20 then
-		return _FelEruption;
-	end
+		if canEyeBeam and not self.buffMetamorphosisExtended and
+			(buffMetamorphosisRemains > 4 or not buffMetamorphosisUp)
+		then
+			return _EyeBeam;
+		end
 
-	-- #8. Felblade
-	if talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift) and furyMax - fury > 30 then
-		return _Felblade;
-	end
+		if canBladeDance and varBladeDance and not cooldownMetamorphosisReady and
+			(cooldownEyeBeamRemains > 5) then -- (5 - azerite.revolving_blades.rank * 3)
+			return bladeDance;
+		end
 
-	-- #9. Bloodlet on Momentum
-	if talents[_Bloodlet] and tg and (momentum or not talents[_Momentum]) and not bl then
-		return _ThrowGlaive;
-	end
+		if canFelBlade and (fury < 40 or (not buffMetamorphosisUp and furyDeficit >= 40)) then
+			return _Felblade;
+		end
 
-	-- #10. Eye Beam
-	if eye and fury >= 50 then
-		return _EyeBeam;
-	end
+		if fury >= 40 and (talents[_BlindFury] or furyDeficit < 30 or buffMetamorphosisRemains < 5) and
+			buffMetamorphosisUp and
+			not varPoolingForBladeDance
+		then
+			return chaosStrike;
+		end
 
-	-- #11. Annihilation on Metamorphosis
-	if meta and furyMax - fury < 30 then
-		return chaosStrike;
-	end
+		if fury >= 40 and (talents[_BlindFury] or furyDeficit < 30) and
+			not buffMetamorphosisUp and
+			not varPoolingForMeta and
+			not varPoolingForBladeDance
+		then
+			return chaosStrike;
+		end
+	else
+		if cooldownFelBarrageReady and not varWaitingForMomentum and (targets > 1) then
+			return _FelBarrage;
+		end
 
-	-- #11. Chaos Strike on Momentum
-	if momentum and fury >= 40 then
-		return chaosStrike;
-	end
+		if canBladeDance and buffMetamorphosisUp and varBladeDance then
+			return bladeDance;
+		end
 
-	-- #11. Chaos Strike if Fury cap
-	if not momentum and fury >= 90 then
-		return chaosStrike;
-	end
+		if canEyeBeam and targets > 1 and not varWaitingForMomentum then
+			return _EyeBeam;
+		end
 
-	-- #12. Fel Barrage with 4 Charges and Momentum
-	if talents[_FelBarrage] and fbCharges >= 4 and (momentum or not talents[_Momentum]) then
-		return _FelBarrage;
+		if canBladeDance and not buffMetamorphosisUp and varBladeDance then
+			return bladeDance;
+		end
+
+		if canFelBlade and furyDeficit >= 40 then
+			return _Felblade;
+		end
+
+		if canEyeBeam and not talents[_BlindFury] and not varWaitingForDarkSlash then
+			return _EyeBeam;
+		end
+
+		if (talents[_DemonBlades] or not varWaitingForMomentum or furyDeficit < 30 or buffMetamorphosisRemains < 5) and
+			buffMetamorphosisUp and
+			not varPoolingForBladeDance and
+			not varWaitingForDarkSlash
+		then
+			return chaosStrike;
+		end
+
+		if fury >= 40 and (talents[_DemonBlades] or not varWaitingForMomentum or furyDeficit < 30) and
+			not buffMetamorphosisUp and
+			not varPoolingForMeta and
+			not varPoolingForBladeDance and
+			not varWaitingForDarkSlash
+		then
+			return chaosStrike;
+		end
+
+		if canEyeBeam and talents[_BlindFury] then
+			return _EyeBeam;
+		end
 	end
 
 	if talents[_DemonBlades] then
-		if tgCharges > 0 then
+		if MaxDps:SpellAvailable(_ThrowGlaive, timeShift) then
 			return _ThrowGlaive;
 		else
 			return nil;
@@ -164,52 +221,8 @@ function MaxDps.DemonHunter.Havoc(_, timeShift, currentSpell, gcd, talents)
 	return _DemonsBite;
 end
 
--- Demon Hunter Vengeance by Ryzux
-function MaxDps.DemonHunter.Vengeance(_, timeShift, currentSpell, gcd, talents)
-	local pain = UnitPower('player', SPELL_POWER_PAIN);
-	local painMax = UnitPowerMax('player', SPELL_POWER_PAIN);
+function DemonHunter:Vengeance(timeShift, currentSpell, gcd, talents)
+	local pain = UnitPower('player', Enum.PowerType.Pain);
 
-	local meta = MaxDps:Aura(_MetamorphosisV, timeShift);
-
-	MaxDps:GlowCooldown(_MetamorphosisV, MaxDps:SpellAvailable(_MetamorphosisV, timeShift));
-	MaxDps:GlowCooldown(_InfernalStrike, MaxDps:SpellAvailable(_InfernalStrike, timeShift));
-
-	-- Rotation
-
-	-- #1. Soul Carver on cooldown
-	if MaxDps:SpellAvailable(_SoulCarver, timeShift) then
-		return _SoulCarver;
-	end
-
-	-- #2. Fel Devastation on cooldown
-	if talents[_FelDevastation] and MaxDps:SpellAvailable(_FelDevastation, timeShift) and pain >= 30 then
-		return _FelDevastation;
-	end
-
-	-- #3. Soul Cleave above 80 pain
-	if pain > 80 then
-		return _SoulCleave;
-	end
-
-	-- #4. Immolation Aura on cooldown
-	if MaxDps:SpellAvailable(_ImmolationAura, timeShift) then
-		return _ImmolationAura;
-	end
-
-	-- #5. Felblade on cooldown
-	if talents[_Felblade] and MaxDps:SpellAvailable(_Felblade, timeShift) then
-		return _Felblade;
-	end
-
-	-- #6. Sigil of Flame on cooldown
-	if MaxDps:SpellAvailable(_SigilOfFlame, timeShift) then
-		return _SigilOfFlame;
-	end
-
-	-- #7. Shear as a filler
-	if meta then
-		return _Sever;
-	else
-		return _Shear;
-	end
+	return nil;
 end
