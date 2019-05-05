@@ -251,7 +251,7 @@ function DemonHunter:HavocDemonic()
 	end
 
 	-- immolation_aura;
-	if cooldown[HV.ImmolationAura].ready then
+	if talents[HV.ImmolationAura] and cooldown[HV.ImmolationAura].ready then
 		return HV.ImmolationAura;
 	end
 
@@ -337,8 +337,8 @@ function DemonHunter:HavocNormal()
 	end
 
 	-- immolation_aura;
-	if cooldown[HV.ImmolationAura].ready then
-	return HV.ImmolationAura;
+	if talents[HV.ImmolationAura] and cooldown[HV.ImmolationAura].ready then
+		return HV.ImmolationAura;
 	end
 
 	-- eye_beam,if=active_enemies>1&(!raid_event.adds.exists|raid_event.adds.up)&!variable.waiting_for_momentum;
