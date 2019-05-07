@@ -63,6 +63,7 @@ local HV = {
 	ThrowGlaive     = 185123,
 	VengefulRetreat = 198793,
 	FelMastery      = 192939,
+	Prepared	= 203650,
 };
 
 local A = {
