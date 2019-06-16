@@ -7,22 +7,24 @@ local DemonHunter = addonTable.DemonHunter;
 local MaxDps = MaxDps;
 
 local VG = {
-	SoulCleave      = 228477,
-	CharredFlesh    = 264002,
-	FelDevastation  = 212084,
-	Metamorphosis   = 187827,
-	SpiritBomb      = 247454,
-	Felblade        = 232893,
-	Fracture        = 263642,
-	Shear           = 203782,
-	ThrowGlaive     = 204157,
-	SoulFragments   = 203981,
-	ImmolationAura  = 178740,
-	SigilOfFlame    = 204596,
-	FieryBrand      = 204021,
-	DemonSpikes     = 203720,
-	DemonSpikesAura = 203819,
-	SoulBarrier     = 263648,
+	SoulCleave         = 228477,
+	CharredFlesh       = 264002,
+	ConcentratedSigils = 207666,
+	FelDevastation     = 212084,
+	Metamorphosis      = 187827,
+	SpiritBomb         = 247454,
+	Felblade           = 232893,
+	Fracture           = 263642,
+	Shear              = 203782,
+	ThrowGlaive        = 204157,
+	SoulFragments      = 203981,
+	ImmolationAura     = 178740,
+	SigilOfFlame       = 204596,
+	SigilOfFlame2      = 204513,
+	FieryBrand         = 204021,
+	DemonSpikes        = 203720,
+	DemonSpikesAura    = 203819,
+	SoulBarrier        = 263648,
 };
 
 setmetatable(VG, DemonHunter.spellMeta);
@@ -85,8 +87,9 @@ function DemonHunter:Vengeance()
 	end
 
 	-- sigil_of_flame;
-	if cooldown[VG.SigilOfFlame].ready then
-		return VG.SigilOfFlame;
+	local SigilOfFlame = talents[VG.ConcentratedSigils] and VG.SigilOfFlame2 or VG.SigilOfFlame;
+	if cooldown[SigilOfFlame].ready then
+		return SigilOfFlame;
 	end
 
 	-- shear;
