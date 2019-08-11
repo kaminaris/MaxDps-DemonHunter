@@ -39,6 +39,7 @@ function DemonHunter:Vengeance()
 	local pain = UnitPower('player', Enum.PowerType.Pain);
 	local soulFragments = buff[VG.SoulFragments].count;
 
+	MaxDps:GlowEssences();
 	MaxDps:GlowCooldown(VG.Metamorphosis, cooldown[VG.Metamorphosis].ready);
 	MaxDps:GlowCooldown(VG.DemonSpikes, cooldown[VG.DemonSpikes].ready and not buff[VG.DemonSpikesAura].up);
 	MaxDps:GlowCooldown(VG.FieryBrand, cooldown[VG.FieryBrand].ready);
