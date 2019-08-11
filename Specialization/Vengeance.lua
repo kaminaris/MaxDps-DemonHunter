@@ -126,7 +126,7 @@ function DemonHunter:VengeanceBrand()
 	end
 
 	-- infernal_stike,if=cooldown.fiery_brand.remains=0;
-	if cooldown[VG.FieryBrand].remains < 2 and cooldown[VG.InfernalStrike].ready then
+	if cooldown[VG.FieryBrand].remains <= 0 and cooldown[VG.InfernalStrike].ready then
 		return VG.InfernalStrike;
 	end
 
