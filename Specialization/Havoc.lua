@@ -152,6 +152,7 @@ function DemonHunter:HavocCooldown()
 	local gcd = fd.gcd;
 	local timeToDie = fd.timeToDie;
 
+	MaxDps:GlowEssences();
 	if talents[HV.MomentumTalent] then
 		MaxDps:GlowCooldown(HV.FelRush, not buff[HV.Momentum].up and cooldown[HV.FelRush].ready);
 		MaxDps:GlowCooldown(HV.VengefulRetreat, not buff[HV.Momentum].up and cooldown[HV.VengefulRetreat].ready);
