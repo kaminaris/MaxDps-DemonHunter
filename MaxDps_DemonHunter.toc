@@ -1,7 +1,7 @@
 ## Title: MaxDps_DemonHunter
-## Version: 8.2.1
+## Version: 8.2.5
 ## Author: Kaminaris
-## Interface: 80200
+## Interface: 80205
 ## Dependencies: MaxDps
 ## LoadOnDemand: 1
 ## X-Curse-Project-ID: 255102
