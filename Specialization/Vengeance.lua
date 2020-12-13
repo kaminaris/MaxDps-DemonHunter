@@ -63,6 +63,8 @@ function DemonHunter:Vengeance()
 	fd.brandBuild = brandBuild;
 
 	MaxDps:GlowCooldown(VG.Metamorphosis, cooldown[VG.Metamorphosis].ready);
+	-- demon_spikes;
+	MaxDps:GlowCooldown(VG.DemonSpikes, cooldown[VG.DemonSpikes].ready and buff[VG.DemonSpikesAura].remains < 1);
 
 	-- throw_glaive,if=buff.fel_bombardment.stack=5&(buff.immolation_aura.up|!buff.metamorphosis.up);
 	if buff[VG.FelBombardment].count == 5 and (buff[VG.ImmolationAura].up or not buff[VG.Metamorphosis].up) then
@@ -148,11 +150,6 @@ function DemonHunter:VengeanceDefensives()
 	local debuff = fd.debuff;
 	local timeToDie = fd.timeToDie;
 	local covenantId = fd.covenant.covenantId;
-
-	-- demon_spikes;
-	if cooldown[VG.DemonSpikes].ready and buff[VG.DemonSpikesAura].remains < 1 then
-		return VG.DemonSpikes;
-	end
 
 	-- metamorphosis,if=!buff.metamorphosis.up&(!covenant.venthyr.enabled|!dot.sinful_brand.ticking)|target.time_to_die<15;
 	--if cooldown[VG.Metamorphosis].ready and (not buff[VG.Metamorphosis].up and (not covenantId == Enum.CovenantType.Venthyr or not debuff[VG.SinfulBrand].up) or timeToDie < 15) then

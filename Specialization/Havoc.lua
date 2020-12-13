@@ -45,6 +45,7 @@ local HV = {
 	VengefulRetreat  = 198793,
 	Prepared         = 203650,
 	FelBarrage       = 258925,
+	FuriousGaze      = 343312,
 
 	-- Leggo buffs
 	FelBombardment   = 337849,
