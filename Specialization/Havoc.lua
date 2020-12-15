@@ -252,8 +252,8 @@ function DemonHunter:HavocDemonic()
 	-- blade_dance,if=variable.blade_dance&!cooldown.metamorphosis.ready&(cooldown.eye_beam.remains>5|(raid_event.adds.in>cooldown&raid_event.adds.in<25));
 	if cooldown[HV.BladeDance].ready and fury >= bladeDanceCost and
 		bladeDance and
-		not cooldown[HV.Metamorphosis].ready and
-		(cooldown[HV.EyeBeam].remains > 5 or cooldown[HV.EyeBeam].remains > 5)
+		--not cooldown[HV.Metamorphosis].ready and
+		cooldown[HV.EyeBeam].remains > 5
 	then
 		return BladeDance;
 	end
