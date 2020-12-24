@@ -50,6 +50,7 @@ local HV = {
 	-- Leggo buffs
 	FelBombardment   = 337849,
 	BurningWound     = 346279,
+	ChaosTheory      = 337567,
 
 	-- Leggo ids
 	ChaosTheoryBonusId  = 7050,
