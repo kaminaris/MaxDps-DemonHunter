@@ -1,5 +1,5 @@
 ## Title: MaxDps_DemonHunter
-## Version: 9.0.2.3
+## Version: 9.0.2.4
 ## Author: Kaminaris
 ## Interface: 90002
 ## Dependencies: MaxDps
