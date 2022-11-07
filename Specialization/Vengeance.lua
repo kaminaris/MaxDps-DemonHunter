@@ -53,9 +53,16 @@ function DemonHunter:Vengeance()
 end
 
 ---@param spellId number
-local function IsCastable(spellId, fury)
-	local cost = GetSpellPowerCost(spellId)[1].cost or 0
-	return MaxDps.FrameData.cooldown[spellId].ready and cost <= fury
+local function IsCastable(spellId)
+	local spellTable = GetSpellPowerCost(spellId);
+	local cost;
+	if spellTable ~= nil then
+		cost = spellTable[1].cost;
+	else
+		return false;
+	end
+
+	return MaxDps.FrameData.cooldown[spellId].ready and cost <= GetFury()
 end
 
 function DemonHunter:VengeanceCooldowns()

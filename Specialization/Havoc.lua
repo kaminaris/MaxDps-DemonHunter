@@ -100,7 +100,14 @@ end
 
 ---@param spellId number
 local function IsCastable(spellId)
-	local cost = GetSpellPowerCost(spellId)[1].cost or 0
+	local spellTable = GetSpellPowerCost(spellId);
+	local cost;
+	if spellTable ~= nil then
+		cost = spellTable[1].cost;
+	else
+		return false;
+	end
+
 	return MaxDps.FrameData.cooldown[spellId].ready and cost <= GetFury()
 end
 
