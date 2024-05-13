@@ -26,6 +26,7 @@ local HV = {
 	FuriousThrows = 393029,
 	GlaiveTempest = 342817,
 	ImmolationAura = 258920,
+	ImmolationAuraBuff = 258920,
 	Initiative = 388108,
 	Metamorphosis = 191427,
 	Momentum = 206476,
@@ -95,6 +96,11 @@ function DemonHunter:Havoc()
 
 	local isSingle = targets <= 1
 	DemonHunter:HavocCooldowns(isSingle)
+	if buff[HV.ImmolationAuraBuff].up then
+		HV.ImmolationAura = 427917
+	else
+		HV.ImmolationAura = 258920
+	end
 	return DemonHunter:HavocRotation()
 end
 
