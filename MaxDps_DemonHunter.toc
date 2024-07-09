@@ -6,6 +6,7 @@
 ## LoadOnDemand: 1
 ## X-Curse-Project-ID: 255102
 ## X-WoWI-ID: 24644
+## X-Wago-ID: RNL97Y6o
 
 Main.lua
 Specialization\Havoc.lua
