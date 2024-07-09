@@ -3,7 +3,7 @@ name: CI-LuaCheck
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
