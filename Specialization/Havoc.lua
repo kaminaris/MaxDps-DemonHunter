@@ -8,6 +8,7 @@ local UnitHealth = UnitHealth
 local UnitAura = C_UnitAuras.GetAuraDataByIndex
 local UnitAuraByName = C_UnitAuras.GetAuraDataBySpellName
 local GetSpellDescription = GetSpellDescription
+local GetSpellPowerCost = C_Spell.GetSpellPowerCost
 local UnitHealthMax = UnitHealthMax
 local UnitPowerMax = UnitPowerMax
 local SpellHaste
@@ -89,7 +90,7 @@ local function CheckSpellCosts(spell,spellstring)
         end
     end
     local costs = GetSpellPowerCost(spell)
-    if type(costs) ~= 'table' and spellstring then print('no cost found for ',spellstring) return true end
+    if type(costs) ~= 'table' and spellstring then return true end
     for i,costtable in pairs(costs) do
         if UnitPower('player', costtable.type) < costtable.cost then
             return false
