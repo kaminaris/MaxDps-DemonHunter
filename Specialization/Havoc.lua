@@ -186,12 +186,18 @@ end
 function Havoc:cooldown()
     if (MaxDps:FindSpell(classtable.Metamorphosis) and CheckSpellCosts(classtable.Metamorphosis, 'Metamorphosis')) and (( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains ) and ( ( not talents[classtable.Demonic] or (MaxDps.spellHistory[1] == classtable.DeathSweep) or (MaxDps.spellHistory[2] == classtable.DeathSweep) or (MaxDps.spellHistory[3] == classtable.DeathSweep) ) and cooldown[classtable.EyeBeam].remains and ( not talents[classtable.EssenceBreak] or debuff[classtable.EssenceBreakDeBuff].up ) and not buff[classtable.FelBarrageBuff].up and ( math.huge >40 or ( targets >8 or not talents[classtable.FelBarrage] ) and targets >2 ) or not talents[classtable.ChaoticTransformation] or ttd <30 )) and cooldown[classtable.Metamorphosis].ready then
         MaxDps:GlowCooldown(classtable.Metamorphosis, cooldown[classtable.Metamorphosis].ready)
+    else
+        MaxDps:GlowCooldown(classtable.Metamorphosis, false)
     end
     if (MaxDps:FindSpell(classtable.TheHunt) and CheckSpellCosts(classtable.TheHunt, 'TheHunt')) and (not debuff[classtable.EssenceBreakDeBuff].up and ( targets >= 1 + targets or math.huge >( 1 + not (MaxDps.tier and MaxDps.tier[31].count >= 2) ) * 45 ) and timeInCombat >5) and cooldown[classtable.TheHunt].ready then
         MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
+    else
+        MaxDps:GlowCooldown(classtable.TheHunt, false)
     end
     if (MaxDps:FindSpell(classtable.SigilofSpite) and CheckSpellCosts(classtable.SigilofSpite, 'SigilofSpite')) and (not debuff[classtable.EssenceBreakDeBuff].up) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
+    else
+        MaxDps:GlowCooldown(classtable.SigilofSpite, false)
     end
 end
 function Havoc:fel_barrage()
@@ -315,6 +321,8 @@ function Havoc:opener()
     end
     if (MaxDps:FindSpell(classtable.Metamorphosis) and CheckSpellCosts(classtable.Metamorphosis, 'Metamorphosis')) and ((MaxDps.spellHistory[1] == classtable.DeathSweep) or ( not talents[classtable.ChaoticTransformation] ) and ( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains >2 ) or not talents[classtable.Demonic]) and cooldown[classtable.Metamorphosis].ready then
         MaxDps:GlowCooldown(classtable.Metamorphosis, cooldown[classtable.Metamorphosis].ready)
+    else
+        MaxDps:GlowCooldown(classtable.Metamorphosis, false)
     end
     if (MaxDps:FindSpell(classtable.Felblade) and CheckSpellCosts(classtable.Felblade, 'Felblade')) and (not debuff[classtable.EssenceBreakDeBuff].up) and cooldown[classtable.Felblade].ready then
         return classtable.Felblade
@@ -395,6 +403,8 @@ function DemonHunter:Havoc()
     fel_barrage = talents[classtable.FelBarrage] and ( cooldown[classtable.FelBarrage].remains <gcd * 7 and ( targets >= 1 + targets or math.huge <gcd * 7 or math.huge >90 ) and ( cooldown[classtable.Metamorphosis].remains or targets >2 ) or buff[classtable.FelBarrageBuff].up ) and not ( targets == 1 and (targets <2) )
     if (MaxDps:FindSpell(classtable.Disrupt) and CheckSpellCosts(classtable.Disrupt, 'Disrupt')) and cooldown[classtable.Disrupt].ready then
         MaxDps:GlowCooldown(classtable.Disrupt, select(8,UnitCastingInfo('target') == false) and cooldown[classtable.Disrupt].ready)
+    else
+        MaxDps:GlowCooldown(classtable.Disrupt, false)
     end
     local cooldownCheck = Havoc:cooldown()
     if cooldownCheck then
