@@ -184,7 +184,8 @@ function Havoc:precombat()
     end
 end
 function Havoc:cooldown()
-    if (MaxDps:FindSpell(classtable.Metamorphosis) and CheckSpellCosts(classtable.Metamorphosis, 'Metamorphosis')) and (( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains ) and ( ( not talents[classtable.Demonic] or (MaxDps.spellHistory[1] == classtable.DeathSweep) or (MaxDps.spellHistory[2] == classtable.DeathSweep) or (MaxDps.spellHistory[3] == classtable.DeathSweep) ) and cooldown[classtable.EyeBeam].remains and ( not talents[classtable.EssenceBreak] or debuff[classtable.EssenceBreakDeBuff].up ) and not buff[classtable.FelBarrageBuff].up and ( math.huge >40 or ( targets >8 or not talents[classtable.FelBarrage] ) and targets >2 ) or not talents[classtable.ChaoticTransformation] or ttd <30 )) and cooldown[classtable.Metamorphosis].ready then
+    --if (MaxDps:FindSpell(classtable.Metamorphosis) and CheckSpellCosts(classtable.Metamorphosis, 'Metamorphosis')) and (( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains ) and ( ( not talents[classtable.Demonic] or (MaxDps.spellHistory[1] == classtable.DeathSweep) or (MaxDps.spellHistory[2] == classtable.DeathSweep) or (MaxDps.spellHistory[3] == classtable.DeathSweep) ) and cooldown[classtable.EyeBeam].remains and ( not talents[classtable.EssenceBreak] or debuff[classtable.EssenceBreakDeBuff].up ) and not buff[classtable.FelBarrageBuff].up and ( math.huge >40 or ( targets >8 or not talents[classtable.FelBarrage] ) and targets >2 ) or not talents[classtable.ChaoticTransformation] or ttd <30 )) and cooldown[classtable.Metamorphosis].ready then
+    if (MaxDps:FindSpell(classtable.Metamorphosis) and CheckSpellCosts(classtable.Metamorphosis, 'Metamorphosis')) and cooldown[classtable.Metamorphosis].ready then
         MaxDps:GlowCooldown(classtable.Metamorphosis, cooldown[classtable.Metamorphosis].ready)
     else
         MaxDps:GlowCooldown(classtable.Metamorphosis, false)
@@ -257,10 +258,10 @@ function Havoc:fel_barrage()
     end
 end
 function Havoc:meta()
-    if (MaxDps:FindSpell(classtable.DeathSweep) and CheckSpellCosts(classtable.DeathSweep, 'DeathSweep')) and (buff[classtable.MetamorphosisBuff].remains <gcd) and cooldown[classtable.DeathSweep].ready then
+    if (MaxDps:FindSpell(classtable.DeathSweep) and CheckSpellCosts(classtable.DeathSweep, 'DeathSweep')) and (buff[classtable.MetamorphosisBuff].remains >gcd) and cooldown[classtable.DeathSweep].ready then
         return classtable.DeathSweep
     end
-    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (buff[classtable.MetamorphosisBuff].remains <gcd) and cooldown[classtable.Annihilation].ready then
+    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (buff[classtable.MetamorphosisBuff].remains >gcd) and cooldown[classtable.Annihilation].ready then
         return classtable.Annihilation
     end
     if (MaxDps:FindSpell(classtable.FelRush) and CheckSpellCosts(classtable.FelRush, 'FelRush')) and (buff[classtable.UnboundChaosBuff].up and talents[classtable.Inertia]) and cooldown[classtable.FelRush].ready then
@@ -290,7 +291,7 @@ function Havoc:meta()
     if (MaxDps:FindSpell(classtable.SigilofFlame) and CheckSpellCosts(classtable.SigilofFlame, 'SigilofFlame')) and (targets >2) and cooldown[classtable.SigilofFlame].ready then
         return classtable.SigilofFlame
     end
-    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (cooldown[classtable.BladeDance].remains >gcd * 2 or Fury >60 or buff[classtable.MetamorphosisBuff].remains <5 and cooldown[classtable.Felblade].up) and cooldown[classtable.Annihilation].ready then
+    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (cooldown[classtable.BladeDance].remains >gcd * 2 or Fury >60 or buff[classtable.MetamorphosisBuff].remains <5 and cooldown[classtable.Felblade].ready) and cooldown[classtable.Annihilation].ready then
         return classtable.Annihilation
     end
     if (MaxDps:FindSpell(classtable.SigilofFlame) and CheckSpellCosts(classtable.SigilofFlame, 'SigilofFlame')) and (buff[classtable.MetamorphosisBuff].remains >5) and cooldown[classtable.SigilofFlame].ready then
@@ -302,7 +303,7 @@ function Havoc:meta()
     if (MaxDps:FindSpell(classtable.SigilofFlame) and CheckSpellCosts(classtable.SigilofFlame, 'SigilofFlame')) and (not debuff[classtable.EssenceBreakDeBuff].up) and cooldown[classtable.SigilofFlame].ready then
         return classtable.SigilofFlame
     end
-    if (MaxDps:FindSpell(classtable.ImmolationAura) and CheckSpellCosts(classtable.ImmolationAura, 'ImmolationAura')) and (cooldown[classtable.ImmolationAura].duration <( cooldown[classtable.EyeBeam].remains <buff[classtable.MetamorphosisBuff].remains ) and ( targets >= 2 )) and cooldown[classtable.ImmolationAura].ready then
+    if (MaxDps:FindSpell(classtable.ImmolationAura) and CheckSpellCosts(classtable.ImmolationAura, 'ImmolationAura')) and (cooldown[classtable.ImmolationAura].duration <( cooldown[classtable.EyeBeam].remains <buff[classtable.MetamorphosisBuff].remains and 1 or 0 ) and ( targets >= 2 )) and cooldown[classtable.ImmolationAura].ready then
         return classtable.ImmolationAura
     end
     if (MaxDps:FindSpell(classtable.FelRush) and CheckSpellCosts(classtable.FelRush, 'FelRush')) and (talents[classtable.Momentum]) and cooldown[classtable.FelRush].ready then
@@ -330,7 +331,7 @@ function Havoc:opener()
     if (MaxDps:FindSpell(classtable.ImmolationAura) and CheckSpellCosts(classtable.ImmolationAura, 'ImmolationAura')) and (cooldown[classtable.ImmolationAura].charges == 2 and not buff[classtable.UnboundChaosBuff].up and ( not buff[classtable.InertiaBuff].up or targets >2 )) and cooldown[classtable.ImmolationAura].ready then
         return classtable.ImmolationAura
     end
-    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (buff[classtable.InnerDemonBuff].up and ( not talents[classtable.ChaoticTransformation] or cooldown[classtable.Metamorphosis].up )) and cooldown[classtable.Annihilation].ready then
+    if (MaxDps:FindSpell(classtable.Annihilation) and CheckSpellCosts(classtable.Annihilation, 'Annihilation')) and (buff[classtable.InnerDemonBuff].up and ( not talents[classtable.ChaoticTransformation] or cooldown[classtable.Metamorphosis].ready )) and cooldown[classtable.Annihilation].ready then
         return classtable.Annihilation
     end
     if (MaxDps:FindSpell(classtable.EyeBeam) and CheckSpellCosts(classtable.EyeBeam, 'EyeBeam')) and (not debuff[classtable.EssenceBreakDeBuff].up and not buff[classtable.InnerDemonBuff].up and ( not buff[classtable.MetamorphosisBuff].up or cooldown[classtable.BladeDance].remains )) and cooldown[classtable.EyeBeam].ready then
@@ -385,6 +386,8 @@ function DemonHunter:Havoc()
     Pain = UnitPower('player', PainPT)
     PainMax = UnitPowerMax('player', PainPT)
     PainDeficit = PainMax - Pain
+    classtable.DeathSweep = 210152
+    classtable.Annihilation = 201427
     classtable.EssenceBreakDeBuff = 320338
     classtable.FelBarrageBuff = 258925
     classtable.ImmolationAuraBuff = 258920
@@ -413,7 +416,7 @@ function DemonHunter:Havoc()
     if (MaxDps:FindSpell(classtable.FelRush) and CheckSpellCosts(classtable.FelRush, 'FelRush')) and (buff[classtable.UnboundChaosBuff].up and buff[classtable.UnboundChaosBuff].remains <gcd * 2) and cooldown[classtable.FelRush].ready then
         return classtable.FelRush
     end
-    if (( cooldown[classtable.EyeBeam].up or cooldown[classtable.Metamorphosis].up ) and timeInCombat <15 and ( math.huge >40 )) then
+    if (( cooldown[classtable.EyeBeam].ready or cooldown[classtable.Metamorphosis].ready ) and timeInCombat <15 and ( math.huge >40 )) then
         local openerCheck = Havoc:opener()
         if openerCheck then
             return Havoc:opener()
@@ -437,7 +440,7 @@ function DemonHunter:Havoc()
     if (MaxDps:FindSpell(classtable.VengefulRetreat) and CheckSpellCosts(classtable.VengefulRetreat, 'VengefulRetreat')) and (talents[classtable.Initiative] and ( cooldown[classtable.EyeBeam].remains >15 and gcd <0.3 or gcd <0.1 and cooldown[classtable.EyeBeam].remains <= gcd and ( cooldown[classtable.Metamorphosis].remains >10 or cooldown[classtable.BladeDance].remains <gcd * 2 ) ) and timeInCombat >4) and cooldown[classtable.VengefulRetreat].ready then
         return classtable.VengefulRetreat
     end
-    if (fel_barrage or not talents[classtable.DemonBlades] and talents[classtable.FelBarrage] and ( buff[classtable.FelBarrageBuff].up or cooldown[classtable.FelBarrage].up ) and not buff[classtable.MetamorphosisBuff].up) then
+    if (fel_barrage or not talents[classtable.DemonBlades] and talents[classtable.FelBarrage] and ( buff[classtable.FelBarrageBuff].up or cooldown[classtable.FelBarrage].ready ) and not buff[classtable.MetamorphosisBuff].up) then
         local fel_barrageCheck = Havoc:fel_barrage()
         if fel_barrageCheck then
             return Havoc:fel_barrage()
@@ -473,10 +476,10 @@ function DemonHunter:Havoc()
     if (MaxDps:FindSpell(classtable.EyeBeam) and CheckSpellCosts(classtable.EyeBeam, 'EyeBeam')) and (not talents[classtable.EssenceBreak] and ( not talents[classtable.ChaoticTransformation] or cooldown[classtable.Metamorphosis].remains <5 + 3 * (talents[classtable.ShatteredDestiny] and talents[classtable.ShatteredDestiny] or 0) or cooldown[classtable.Metamorphosis].remains >15 ) and ( targets >2 )) and cooldown[classtable.EyeBeam].ready then
         return classtable.EyeBeam
     end
-    if (MaxDps:FindSpell(classtable.EyeBeam) and CheckSpellCosts(classtable.EyeBeam, 'EyeBeam')) and (talents[classtable.EssenceBreak] and ( cooldown[classtable.EssenceBreak].remains <gcd * 2 + 5 * (talents[classtable.ShatteredDestiny] and talents[classtable.ShatteredDestiny] or 0) or talents[classtable.ShatteredDestiny] and cooldown[classtable.EssenceBreak].remains >10 ) and ( cooldown[classtable.BladeDance].remains <7 or (targets >1) ) and ( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains >10 or (targets >1) ) and ( not talents[classtable.Inertia] or buff[classtable.UnboundChaosBuff].up or cooldown[classtable.ImmolationAura].charges == 0 and cooldown[classtable.ImmolationAura].duration >5 ) and ( not (targets >1) or targets >8 ) or ttd <10) and cooldown[classtable.EyeBeam].ready then
+    if (MaxDps:FindSpell(classtable.EyeBeam) and CheckSpellCosts(classtable.EyeBeam, 'EyeBeam')) and (talents[classtable.EssenceBreak] and ( cooldown[classtable.EssenceBreak].remains <gcd * 2 + 5 * (talents[classtable.ShatteredDestiny] and talents[classtable.ShatteredDestiny] or 0) or talents[classtable.ShatteredDestiny] and cooldown[classtable.EssenceBreak].remains >10 ) and ( cooldown[classtable.BladeDance].remains <7 or (targets >1) ) and ( not talents[classtable.Initiative] or cooldown[classtable.VengefulRetreat].remains >10 or (targets >1) ) and ( not talents[classtable.Inertia] or buff[classtable.UnboundChaosBuff].up or cooldown[classtable.ImmolationAura].charges == 0 and cooldown[classtable.ImmolationAura].duration >5 ) and ( (targets >1) or targets >8 ) or ttd <10) and cooldown[classtable.EyeBeam].ready then
         return classtable.EyeBeam
     end
-    if (MaxDps:FindSpell(classtable.BladeDance) and CheckSpellCosts(classtable.BladeDance, 'BladeDance')) and (cooldown[classtable.EyeBeam].remains >gcd or cooldown[classtable.EyeBeam].up) and cooldown[classtable.BladeDance].ready then
+    if (MaxDps:FindSpell(classtable.BladeDance) and CheckSpellCosts(classtable.BladeDance, 'BladeDance')) and (cooldown[classtable.EyeBeam].remains >gcd or cooldown[classtable.EyeBeam].ready) and cooldown[classtable.BladeDance].ready then
         return classtable.BladeDance
     end
     if (MaxDps:FindSpell(classtable.GlaiveTempest) and CheckSpellCosts(classtable.GlaiveTempest, 'GlaiveTempest')) and (targets >= 1 + targets or math.huge >10) and cooldown[classtable.GlaiveTempest].ready then
