@@ -189,7 +189,7 @@ function Havoc:cooldown()
     else
         MaxDps:GlowCooldown(classtable.Metamorphosis, false)
     end
-    if (MaxDps:FindSpell(classtable.TheHunt) and CheckSpellCosts(classtable.TheHunt, 'TheHunt')) and (not debuff[classtable.EssenceBreakDeBuff].up and ( targets >= 1 + targets or math.huge >( 1 + not (MaxDps.tier and MaxDps.tier[31].count >= 2) and 1 or 0 ) * 45 ) and timeInCombat >5) and cooldown[classtable.TheHunt].ready then
+    if (MaxDps:FindSpell(classtable.TheHunt) and CheckSpellCosts(classtable.TheHunt, 'TheHunt')) and (not debuff[classtable.EssenceBreakDeBuff].up and ( targets >= 1 + targets or math.huge >( 1 + (MaxDps.tier and MaxDps.tier[31].count >= 2 and 1 or 0) ) * 45 ) and timeInCombat >5) and cooldown[classtable.TheHunt].ready then
         MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
     else
         MaxDps:GlowCooldown(classtable.TheHunt, false)
