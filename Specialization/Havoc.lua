@@ -386,7 +386,7 @@ end
 function Havoc:callaction()
     fel_barrage = talents[classtable.FelBarrage] and ( cooldown[classtable.FelBarrage].remains <gcd * 7 and ( targets >= 1 + 1 or math.huge <gcd * 7 or math.huge >90 ) and ( cooldown[classtable.Metamorphosis].ready==false or targets >2 ) or buff[classtable.FelBarrageBuff].up ) and not ( targets == 1 and (targets <2) )
     if (MaxDps:FindSpell(classtable.Disrupt) and CheckSpellCosts(classtable.Disrupt, 'Disrupt')) and cooldown[classtable.Disrupt].ready then
-        MaxDps:GlowCooldown(classtable.Disrupt, select(8,UnitCastingInfo('target') == false) and cooldown[classtable.Disrupt].ready)
+        MaxDps:GlowCooldown(classtable.Disrupt, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
     local cooldownCheck = Havoc:cooldown()
     if cooldownCheck then

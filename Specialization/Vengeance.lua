@@ -577,7 +577,7 @@ function Vengeance:callaction()
         num_spawnable_souls = 1
     end
     if (MaxDps:FindSpell(classtable.Disrupt) and CheckSpellCosts(classtable.Disrupt, 'Disrupt')) and (UnitCastingInfo('target') and select(8,UnitCastingInfo('target')) == false) and cooldown[classtable.Disrupt].ready then
-        MaxDps:GlowCooldown(classtable.Disrupt, select(8,UnitCastingInfo('target') == false) and cooldown[classtable.Disrupt].ready)
+        MaxDps:GlowCooldown(classtable.Disrupt, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
     if (MaxDps:FindSpell(classtable.InfernalStrike) and CheckSpellCosts(classtable.InfernalStrike, 'InfernalStrike')) and cooldown[classtable.InfernalStrike].ready then
         return classtable.InfernalStrike
