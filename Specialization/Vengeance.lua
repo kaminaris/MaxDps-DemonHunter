@@ -91,7 +91,7 @@ local fiery_brand_back_before_meta
 local hold_sof
 
 local function CheckSpellCosts(spell,spellstring)
-    if not IsSpellKnown(spell) then return false end
+    if not IsSpellKnownOrOverridesKnown(spell) then return false end
     if not C_Spell.IsSpellUsable(spell) then return false end
     if spellstring == 'TouchofDeath' then
         if targethealthPerc > 15 then
@@ -163,12 +163,12 @@ function Vengeance:precombat()
     single_target = targets == 1 and 1 or 0
     small_aoe = targets >= 2 and targets <= 5  and 1 or 0
     big_aoe = targets >= 6  and 1 or 0
-    if (CheckSpellCosts(classtable.SigilofFlame, 'SigilofFlame')) and (talents[classtable.AldrachiReaver] or UnitLevel('player') <71 or ( talents[classtable.Felscarred] and talents[classtable.StudentofSuffering] )) and cooldown[classtable.SigilofFlame].ready then
-        return classtable.SigilofFlame
-    end
-    if (CheckSpellCosts(classtable.ImmolationAura, 'ImmolationAura')) and cooldown[classtable.ImmolationAura].ready then
-        return classtable.ImmolationAura
-    end
+    --if (CheckSpellCosts(classtable.SigilofFlame, 'SigilofFlame')) and (talents[classtable.AldrachiReaver] or UnitLevel('player') <71 or ( talents[classtable.Felscarred] and talents[classtable.StudentofSuffering] )) and cooldown[classtable.SigilofFlame].ready then
+    --    return classtable.SigilofFlame
+    --end
+    --if (CheckSpellCosts(classtable.ImmolationAura, 'ImmolationAura')) and cooldown[classtable.ImmolationAura].ready then
+    --    return classtable.ImmolationAura
+    --end
 end
 function Vengeance:ar()
     if talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up then
@@ -580,7 +580,7 @@ function Vengeance:callaction()
         MaxDps:GlowCooldown(classtable.Disrupt, ( select(8,UnitCastingInfo('target')) ~= nil and not select(8,UnitCastingInfo('target')) or select(7,UnitChannelInfo('target')) ~= nil and not select(7,UnitChannelInfo('target'))) )
     end
     if (CheckSpellCosts(classtable.InfernalStrike, 'InfernalStrike')) and cooldown[classtable.InfernalStrike].ready then
-        return classtable.InfernalStrike
+        MaxDps:GlowCooldown(classtable.InfernalStrike, cooldown[classtable.InfernalStrike].ready)
     end
     if (CheckSpellCosts(classtable.DemonSpikes, 'DemonSpikes')) and (not buff[classtable.DemonSpikesBuff].up and (UnitThreatSituation('player') == 2 or UnitThreatSituation('player') == 3)) and cooldown[classtable.DemonSpikes].ready then
         MaxDps:GlowCooldown(classtable.DemonSpikes, cooldown[classtable.DemonSpikes].ready)
@@ -670,6 +670,7 @@ function DemonHunter:Vengeance()
     Pain = UnitPower('player', PainPT)
     PainMax = UnitPowerMax('player', PainPT)
     PainDeficit = PainMax - Pain
+    classtable.ReaversGlaive = 442294
     for spellId in pairs(MaxDps.Flags) do
         self.Flags[spellId] = false
         self:ClearGlowIndependent(spellId, spellId)
