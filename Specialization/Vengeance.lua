@@ -597,12 +597,6 @@ function Vengeance:callaction()
             return Vengeance:fs()
         end
     end
-    if (cooldown_sync) then
-        local externalsCheck = Vengeance:externals()
-        if externalsCheck then
-            return Vengeance:externals()
-        end
-    end
     if (buff[classtable.GlaiveFlurryBuff].up or buff[classtable.RendingStrikeBuff].up) then
         local rg_activeCheck = Vengeance:rg_active()
         if rg_activeCheck then
@@ -644,10 +638,6 @@ function Vengeance:callaction()
         if meta_prepCheck then
             return Vengeance:meta_prep()
         end
-    end
-    local externalsCheck = Vengeance:externals()
-    if externalsCheck then
-        return externalsCheck
     end
 end
 function DemonHunter:Vengeance()
