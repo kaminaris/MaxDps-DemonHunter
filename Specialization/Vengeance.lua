@@ -610,6 +610,8 @@ function DemonHunter:Vengeance()
     PainMax = UnitPowerMax('player', PainPT)
     PainDeficit = PainMax - Pain
     classtable.ReaversGlaive = 442294
+    classtable.SpiritBurst = 452437
+    classtable.SoulSunder = 452436
     for spellId in pairs(MaxDps.Flags) do
         self.Flags[spellId] = false
         self:ClearGlowIndependent(spellId, spellId)
