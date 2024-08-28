@@ -524,13 +524,13 @@ function Vengeance:callaction()
     if (MaxDps:CheckSpellUsable(classtable.DemonSpikes, 'DemonSpikes')) and (not buff[classtable.DemonSpikesBuff].up and (UnitThreatSituation('player') == 2 or UnitThreatSituation('player') == 3)) and cooldown[classtable.DemonSpikes].ready then
         MaxDps:GlowCooldown(classtable.DemonSpikes, cooldown[classtable.DemonSpikes].ready)
     end
-    if (talents[classtable.AldrachiReaver] or UnitLevel('player') <71) then
+    if ((MaxDps.ActiveHeroTree == 'aldrachireaver') or UnitLevel('player') <71) then
         local arCheck = Vengeance:ar()
         if arCheck then
             return Vengeance:ar()
         end
     end
-    if (talents[classtable.Felscarred]) then
+    if ((MaxDps.ActiveHeroTree == 'felscarred')) then
         local fsCheck = Vengeance:fs()
         if fsCheck then
             return Vengeance:fs()
