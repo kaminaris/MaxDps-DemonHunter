@@ -134,7 +134,7 @@ function Havoc:meta()
     if (MaxDps:CheckSpellUsable(classtable.FelRush, 'FelRush')) and (not buff[classtable.UnboundChaosBuff].up and cooldown[classtable.FelRush].duration <cooldown[classtable.EyeBeam].remains and not debuff[classtable.EssenceBreakDeBuff].up and ( cooldown[classtable.EyeBeam].remains >8 or cooldown[classtable.FelRush].charges >1.01 ) and true) and cooldown[classtable.FelRush].ready then
         return classtable.FelRush
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and not talents[classtable.DemonBlades] and cooldown[classtable.DemonsBite].ready then
         return classtable.DemonsBite
     end
 end
@@ -183,7 +183,7 @@ function Havoc:opener()
     if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and cooldown[classtable.Annihilation].ready then
         return classtable.Annihilation
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and not talents[classtable.DemonBlades] and cooldown[classtable.DemonsBite].ready then
         return classtable.DemonsBite
     end
 end
@@ -239,7 +239,7 @@ function Havoc:fel_barrage()
     if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and (Fury >40 and ( targets >= 1 + 1 or math.huge >( 1 + (MaxDps.tier and MaxDps.tier[31].count >= 2 and 1 or 0) ) * 40 )) and cooldown[classtable.TheHunt].ready then
         MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and not talents[classtable.DemonBlades] and cooldown[classtable.DemonsBite].ready then
         return classtable.DemonsBite
     end
 end
@@ -349,7 +349,7 @@ function Havoc:callaction()
     if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (true and not debuff[classtable.EssenceBreakDeBuff].up and ( not talents[classtable.FelBarrage] or cooldown[classtable.FelBarrage].remains >25 or ( targets == 1 and (targets <2) ) )) and cooldown[classtable.SigilofFlame].ready then
         return classtable.SigilofFlame
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and not talents[classtable.DemonBlades] and cooldown[classtable.DemonsBite].ready then
         return classtable.DemonsBite
     end
     if (MaxDps:CheckSpellUsable(classtable.FelRush, 'FelRush')) and (not buff[classtable.UnboundChaosBuff].up and cooldown[classtable.FelRush].duration <cooldown[classtable.EyeBeam].remains and not debuff[classtable.EssenceBreakDeBuff].up and ( cooldown[classtable.EyeBeam].remains >8 or cooldown[classtable.FelRush].charges >1.01 )) and cooldown[classtable.FelRush].ready then
