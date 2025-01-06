@@ -77,6 +77,15 @@ local special_trinket
 local generator_up
 local fury_gen
 local gcd_drain
+
+local function GetNumSoulFragments()
+    local auraData = UnitAuraByName('player','Soul Fragments')
+    if auraData and auraData.applications then
+        return auraData.applications
+    end
+    return 0
+end
+
 function Havoc:precombat()
     rg_ds = 0
     if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and cooldown[classtable.SigilofFlame].ready and not UnitAffectingCombat('player') then
@@ -512,6 +521,7 @@ function DemonHunter:Havoc()
     classtable = MaxDps.SpellTable
     SpellHaste = UnitSpellHaste('player')
     SpellCrit = GetCritChance()
+    SoulFragments = GetNumSoulFragments()
     classtable.DeathSweep = 210152
     classtable.Annihilation = 201427
     classtable.Chaostheory = 389687
