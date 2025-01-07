@@ -525,6 +525,7 @@ function DemonHunter:Havoc()
     classtable.DeathSweep = 210152
     classtable.Annihilation = 201427
     classtable.Chaostheory = 389687
+    classtable.ReaversGlaive = 442294
     if buff[classtable.ImmolationAuraBuff].up then
         classtable.ImmolationAura = 427917
     else
@@ -549,7 +550,7 @@ function DemonHunter:Havoc()
     classtable.RendingStrikeBuff = 0
     classtable.DemonsurgeAnnihilationBuff = 0
     classtable.ReaversMarkDeBuff = 442679
-    classtable.ReaversGlaiveBuff = 0
+    classtable.ReaversGlaiveBuff = 444661
     classtable.InitiativeBuff = 388108
     classtable.TacticalRetreatBuff = 389890
     classtable.UnboundChaosBuff = 347462
