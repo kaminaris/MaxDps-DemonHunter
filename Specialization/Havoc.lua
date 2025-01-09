@@ -526,6 +526,8 @@ function DemonHunter:Havoc()
     classtable.Annihilation = 201427
     classtable.Chaostheory = 389687
     classtable.ReaversGlaive = 442294
+    classtable.AbyssalGaze = 452497
+    classtable.SigilofDoom = 452490
     if buff[classtable.ImmolationAuraBuff].up then
         classtable.ImmolationAura = 427917
     else
