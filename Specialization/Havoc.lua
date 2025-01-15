@@ -181,7 +181,7 @@ function Havoc:fel_barrage()
     end
 end
 function Havoc:meta()
-    if (MaxDps:CheckSpellUsable(classtable.DeathSweep, 'DeathSweep')) and (buff[classtable.MetamorphosisBuff].remains <gcd or ( (MaxDps.ActiveHeroTree == 'felscarred') and talents[classtable.Chaostheory] and talents[classtable.EssenceBreak] and ( cooldown[classtable.Metamorphosis].ready or (MaxDps.spellHistory[1] == classtable.Metamorphosis) ) and buff[classtable.DemonsurgeBuff].count == 0 ) and ( not talents[classtable.RestlessHunter] or not cooldown[classtable.Metamorphosis].ready and not cooldown[classtable.EssenceBreak].ready )) and cooldown[classtable.DeathSweep].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DeathSweep, 'DeathSweep')) and (buff[classtable.MetamorphosisBuff].remains <gcd or ( (MaxDps.ActiveHeroTree == 'felscarred') and talents[classtable.ChaosTheory] and talents[classtable.EssenceBreak] and ( cooldown[classtable.Metamorphosis].ready or (MaxDps.spellHistory[1] == classtable.Metamorphosis) ) and buff[classtable.DemonsurgeBuff].count == 0 ) and ( not talents[classtable.RestlessHunter] or not cooldown[classtable.Metamorphosis].ready and not cooldown[classtable.EssenceBreak].ready )) and cooldown[classtable.DeathSweep].ready then
         if not setSpell then setSpell = classtable.DeathSweep end
     end
     if (MaxDps:CheckSpellUsable(classtable.VengefulRetreat, 'VengefulRetreat')) and (talents[classtable.Initiative] and not cooldown[classtable.Metamorphosis].ready and not cooldown[classtable.EyeBeam].ready) and cooldown[classtable.VengefulRetreat].ready then
@@ -190,7 +190,7 @@ function Havoc:meta()
     if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and (buff[classtable.MetamorphosisBuff].remains <gcd or debuff[classtable.EssenceBreakDeBuff].remains and debuff[classtable.EssenceBreakDeBuff].remains <0.5 or talents[classtable.RestlessHunter] and buff[classtable.MetamorphosisBuff].up and cooldown[classtable.EssenceBreak].ready and cooldown[classtable.Metamorphosis].ready) and cooldown[classtable.Annihilation].ready then
         if not setSpell then setSpell = classtable.Annihilation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and (( (MaxDps.ActiveHeroTree == 'felscarred') and buff[classtable.MetamorphosisBuff].up and ( talents[classtable.RestlessHunter] or not talents[classtable.Chaostheory] or buff[classtable.ChaostheoryBuff].up ) ) and ( cooldown[classtable.EyeBeam].remains <gcd * 3 and not cooldown[classtable.BladeDance].ready or cooldown[classtable.Metamorphosis].remains <gcd * 3 )) and cooldown[classtable.Annihilation].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and (( (MaxDps.ActiveHeroTree == 'felscarred') and buff[classtable.MetamorphosisBuff].up and ( talents[classtable.RestlessHunter] or not talents[classtable.ChaosTheory] or buff[classtable.ChaosTheoryBuff].up ) ) and ( cooldown[classtable.EyeBeam].remains <gcd * 3 and not cooldown[classtable.BladeDance].ready or cooldown[classtable.Metamorphosis].remains <gcd * 3 )) and cooldown[classtable.Annihilation].ready then
         if not setSpell then setSpell = classtable.Annihilation end
     end
     if (MaxDps:CheckSpellUsable(classtable.FelRush, 'FelRush')) and (buff[classtable.InertiaTriggerBuff].up and talents[classtable.Inertia] and not cooldown[classtable.Metamorphosis].ready and ( not (MaxDps.ActiveHeroTree == 'felscarred') or not cooldown[classtable.EyeBeam].ready )) and cooldown[classtable.FelRush].ready then
@@ -309,7 +309,7 @@ function Havoc:opener()
     if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and (( buff[classtable.MetamorphosisBuff].up and (MaxDps.ActiveHeroTree == 'aldrachireaver') and talents[classtable.ShatteredDestiny] or not talents[classtable.ShatteredDestiny] and (MaxDps.ActiveHeroTree == 'aldrachireaver') or (MaxDps.ActiveHeroTree == 'felscarred') ) and ( not talents[classtable.Initiative] or buff[classtable.InitiativeBuff].up or timeInCombat >5 )) and cooldown[classtable.TheHunt].ready then
         MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.DeathSweep, 'DeathSweep')) and ((MaxDps.ActiveHeroTree == 'felscarred') and talents[classtable.Chaostheory] and buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeBuff].count == 0 and not talents[classtable.RestlessHunter]) and cooldown[classtable.DeathSweep].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DeathSweep, 'DeathSweep')) and ((MaxDps.ActiveHeroTree == 'felscarred') and talents[classtable.ChaosTheory] and buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeBuff].count == 0 and not talents[classtable.RestlessHunter]) and cooldown[classtable.DeathSweep].ready then
         if not setSpell then setSpell = classtable.DeathSweep end
     end
     if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and ((MaxDps.ActiveHeroTree == 'felscarred') and buff[classtable.MetamorphosisBuff].up and ( not talents[classtable.EssenceBreak] or buff[classtable.InnerDemonBuff].up )) and cooldown[classtable.Annihilation].ready then
@@ -559,7 +559,7 @@ function DemonHunter:Havoc()
     classtable.TacticalRetreatBuff = 389890
     classtable.UnboundChaosBuff = 347462
     classtable.DemonsurgeBuff = 452402
-    classtable.ChaostheoryBuff = 390195
+    classtable.ChaosTheoryBuff = 390195
     classtable.InertiaTriggerBuff = 347462
     classtable.MomentumBuff = 208628
     classtable.InertiaBuff = 427641
