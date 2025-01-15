@@ -584,7 +584,7 @@ function DemonHunter:Havoc()
         talents[classtable.FuriousThrows] = 1
         talents[classtable.CycleofHatred] = 1
         talents[classtable.RestlessHunter] = 1
-        talents[classtable.Chaostheory] = 1
+        talents[classtable.ChaosTheory] = 1
         talents[classtable.Soulscar] = 1
         talents[classtable.InnerDemon] = 1
     end
