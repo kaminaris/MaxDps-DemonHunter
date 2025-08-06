@@ -814,6 +814,7 @@ local function ClearCDs()
     MaxDps:GlowCooldown(classtable.TheHunt, false)
     MaxDps:GlowCooldown(classtable.SigilofSpite, false)
     MaxDps:GlowCooldown(classtable.VengefulRetreat, false)
+    MaxDps:GlowCooldown(classtable.InfernalStrike, false)
 end
 
 function Vengeance:callaction()
@@ -838,7 +839,8 @@ function Vengeance:callaction()
         num_spawnable_souls = num_spawnable_souls+1
     end
     if (MaxDps:CheckSpellUsable(classtable.InfernalStrike, 'InfernalStrike')) and cooldown[classtable.InfernalStrike].ready then
-        if not setSpell then setSpell = classtable.InfernalStrike end
+        --if not setSpell then setSpell = classtable.InfernalStrike end
+        MaxDps:GlowCooldown(classtable.InfernalStrike, true)
     end
     if (not (MaxDps.ActiveHeroTree == 'felscarred')) then
         Vengeance:ar()
