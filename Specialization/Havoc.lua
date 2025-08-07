@@ -250,7 +250,7 @@ function Havoc:ar()
     if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (true and not debuff[classtable.EssenceBreakDeBuff].up and (not talents[classtable.FelBarrage] or cooldown[classtable.FelBarrage].remains >25 or targets == 1 and not (targets >1))) and cooldown[classtable.SigilofFlame].ready then
         if not setSpell then setSpell = classtable.SigilofFlame end
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
     if (MaxDps:CheckSpellUsable(classtable.ThrowGlaive, 'ThrowGlaive')) and (not buff[classtable.UnboundChaosBuff].up and cooldown[classtable.ThrowGlaive].partialRecharge <cooldown[classtable.EyeBeam].remains and not debuff[classtable.EssenceBreakDeBuff].up and (cooldown[classtable.EyeBeam].remains >8 or cooldown[classtable.ThrowGlaive].charges >1.01) and true and targets >1) and cooldown[classtable.ThrowGlaive].ready then
@@ -362,7 +362,7 @@ function Havoc:ar_fel_barrage()
     if (MaxDps:CheckSpellUsable(classtable.ChaosStrike, 'ChaosStrike')) and (Fury - gcd_drain-40 >20 and (not cooldown[classtable.FelBarrage].ready and cooldown[classtable.FelBarrage].remains <10 and Fury >100 or buff[classtable.FelBarrageBuff].up and (buff[classtable.FelBarrageBuff].remains * fury_gen-buff[classtable.FelBarrageBuff].remains * 32)>0)) and cooldown[classtable.ChaosStrike].ready then
         if not setSpell then setSpell = classtable.ChaosStrike end
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
 end
@@ -436,7 +436,7 @@ function Havoc:ar_meta()
     if (MaxDps:CheckSpellUsable(classtable.FelRush, 'FelRush')) and (cooldown[classtable.FelRush].partialRecharge <cooldown[classtable.EyeBeam].remains and not debuff[classtable.EssenceBreakDeBuff].up and (cooldown[classtable.EyeBeam].remains >8 or cooldown[classtable.FelRush].charges >1.01) and true and targets >1) and cooldown[classtable.FelRush].ready then
         MaxDps:GlowCooldown(classtable.FelRush, cooldown[classtable.FelRush].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
 end
@@ -510,7 +510,7 @@ function Havoc:ar_opener()
     if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and cooldown[classtable.Annihilation].ready then
         if not setSpell then setSpell = classtable.Annihilation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
     opened = true
@@ -672,7 +672,7 @@ function Havoc:fs_meta()
     if (MaxDps:CheckSpellUsable(classtable.FelRush, 'FelRush')) and (cooldown[classtable.FelRush].partialRecharge <cooldown[classtable.EyeBeam].remains and not debuff[classtable.EssenceBreakDeBuff].up and (cooldown[classtable.EyeBeam].remains >8 or cooldown[classtable.FelRush].charges >1.01) and true and targets >1) and cooldown[classtable.FelRush].ready then
         MaxDps:GlowCooldown(classtable.FelRush, cooldown[classtable.FelRush].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
 end
@@ -731,7 +731,7 @@ function Havoc:fs_opener()
     if (MaxDps:CheckSpellUsable(classtable.Annihilation, 'Annihilation')) and cooldown[classtable.Annihilation].ready then
         if not setSpell then setSpell = classtable.Annihilation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and cooldown[classtable.DemonsBite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.DemonsBite, 'DemonsBite')) and (not talents[classtable.DemonBlades]) and cooldown[classtable.DemonsBite].ready then
         if not setSpell then setSpell = classtable.DemonsBite end
     end
     opened = true
