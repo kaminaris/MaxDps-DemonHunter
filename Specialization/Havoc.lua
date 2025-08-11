@@ -107,13 +107,6 @@ local PainRegen
 local PainRegenCombined
 local PainTimeToMax
 local SoulFragments
-local SoulFragmentsMax
-local SoulFragmentsDeficit
-local SoulFragmentsPerc
-local SoulFragmentsRegen
-local SoulFragmentsRegenCombined
-local SoulFragmentsTimeToMax
-local SoulFragments
 
 local Havoc = {}
 
@@ -808,12 +801,6 @@ function DemonHunter:Havoc()
     PainPerc = (Pain / PainMax) * 100
     PainRegen = GetPowerRegenForPowerType(PainPT)
     PainTimeToMax = PainDeficit / PainRegen
-    --SoulFragments = UnitPower('player', SoulFragmentsPT)
-    --SoulFragmentsMax = UnitPowerMax('player', SoulFragmentsPT)
-    --SoulFragmentsDeficit = SoulFragmentsMax - SoulFragments
-    --SoulFragmentsPerc = (SoulFragments / SoulFragmentsMax) * 100
-    --SoulFragmentsRegen = GetPowerRegenForPowerType(SoulFragmentsPT)
-    --SoulFragmentsTimeToMax = SoulFragmentsDeficit / SoulFragmentsRegen
     SpellHaste = UnitSpellHaste('player')
     SpellCrit = GetCritChance()
     SoulFragments = GetNumSoulFragments()
