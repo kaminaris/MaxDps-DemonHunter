@@ -107,13 +107,6 @@ local PainRegen
 local PainRegenCombined
 local PainTimeToMax
 local SoulFragments
-local SoulFragmentsMax
-local SoulFragmentsDeficit
-local SoulFragmentsPerc
-local SoulFragmentsRegen
-local SoulFragmentsRegenCombined
-local SoulFragmentsTimeToMax
-local SoulFragments
 
 local Vengeance = {}
 
@@ -123,16 +116,7 @@ local big_aoe = false
 local trinket_1_buffs = false
 local trinket_2_buffs = false
 local num_spawnable_souls = 0
-local spb_threshold = false
-local can_spb = false
-local can_spb_soon = false
-local can_spb_one_gcd = false
-local double_rm_expires = 0
-local double_rm_remains = 0
-local trigger_overflow = false
-local rg_enhance_cleave = 0
-local souls_before_next_rg_sequence = 0
-local crit_pct = 0
+local crit_pct = false
 local fel_dev_sequence_time = false
 local fel_dev_passive_fury_gen = 0
 local spbomb_threshold = false
@@ -143,7 +127,7 @@ local spburst_threshold = false
 local can_spburst = false
 local can_spburst_soon = false
 local can_spburst_one_gcd = false
-local meta_prep_time = false
+local meta_prep_time = 0
 local dont_soul_cleave = false
 local fiery_brand_back_before_meta = false
 local hold_sof_for_meta = false
@@ -176,194 +160,91 @@ function Vengeance:precombat()
     end
 end
 function Vengeance:ar()
-    if talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up then
-        spb_threshold = ((single_target and 1 or 0) * 5)+((small_aoe and 1 or 0) * 5)+((big_aoe and 1 or 0) * 4)
-    else
-        spb_threshold = ((single_target and 1 or 0) * 5)+((small_aoe and 1 or 0) * 5)+((big_aoe and 1 or 0) * 4)
-    end
-    if talents[classtable.SpiritBomb] then
-        can_spb = SoulFragments >= spb_threshold
-    else
-        can_spb = false
-    end
-    if talents[classtable.SpiritBomb] then
-        can_spb_soon = SoulFragments >= spb_threshold
-    else
-        can_spb_soon = false
-    end
-    if talents[classtable.SpiritBomb] then
-        can_spb_one_gcd = (SoulFragments + num_spawnable_souls)>=spb_threshold
-    else
-        can_spb_one_gcd = false
-    end
-    if not buff[classtable.GlaiveFlurryBuff].up and buff[classtable.RendingStrikeBuff].up then
-        double_rm_expires = timeInCombat + 2+20
-    end
-    if (double_rm_expires - timeInCombat)>0 then
-        double_rm_remains = double_rm_expires - timeInCombat
-    else
-        double_rm_remains = 0
-    end
-    if not buff[classtable.GlaiveFlurryBuff].up and not buff[classtable.RendingStrikeBuff].up and not (MaxDps.spellHistory[1] == classtable.ReaversGlaive) then
-        trigger_overflow = 0
-    end
-    if trigger_overflow or (targets >= 4) or (ttd <10 or ttd <10) then
-        rg_enhance_cleave = 1
-    else
-        rg_enhance_cleave = 0
-    end
-    souls_before_next_rg_sequence = SoulFragments + buff[classtable.ArtoftheGlaiveBuff].count
-    souls_before_next_rg_sequence = souls_before_next_rg_sequence+(1.1*(1 + SpellHaste))*(double_rm_remains-(2 + 2+2 + gcd+(0.5 * gcd)))
-    if cooldown[classtable.SigilofSpite].remains<(double_rm_remains - gcd-(2 - (talents[classtable.SoulSigils] and talents[classtable.SoulSigils] or 0))) then
-        souls_before_next_rg_sequence = souls_before_next_rg_sequence+3 + (talents[classtable.SoulSigils] and talents[classtable.SoulSigils] or 0)
-    end
-    if cooldown[classtable.SoulCarver].remains<(double_rm_remains - gcd) then
-        souls_before_next_rg_sequence = souls_before_next_rg_sequence+3
-    end
-    if cooldown[classtable.SoulCarver].remains<(double_rm_remains - gcd-3) then
-        souls_before_next_rg_sequence = souls_before_next_rg_sequence+3
-    end
-    if (MaxDps:CheckSpellUsable(classtable.trinket1, 'trinket1')) and (not trinket_1_buffs or (trinket_1_buffs and ((buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) or ((MaxDps.spellHistory[1] == classtable.ReaversGlaive)) or (buff[classtable.ThrilloftheFightDamageBuff].remains >8) or (buff[classtable.ReaversGlaiveBuff].up and cooldown[classtable.TheHunt].remains <5)))) and cooldown[classtable.trinket1].ready then
+    if (MaxDps:CheckSpellUsable(classtable.trinket1, 'trinket1')) and (not MaxDps:CheckTrinketNames('TomeofLightsDevotion') and (not trinket_1_buffs or (trinket_1_buffs and ((buff[classtable.MetamorphosisBuff].up) or (buff[classtable.MetamorphosisBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('13')) or (trinket_2_buffs and MaxDps:CheckTrinketCooldown('14') <cooldown[classtable.Metamorphosis].remains))))) and cooldown[classtable.trinket1].ready then
         MaxDps:GlowCooldown(classtable.trinket1, cooldown[classtable.trinket1].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.trinket2, 'trinket2')) and (not trinket_2_buffs or (trinket_2_buffs and ((buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) or ((MaxDps.spellHistory[1] == classtable.ReaversGlaive)) or (buff[classtable.ThrilloftheFightDamageBuff].remains >8) or (buff[classtable.ReaversGlaiveBuff].up and cooldown[classtable.TheHunt].remains <5)))) and cooldown[classtable.trinket2].ready then
+    if (MaxDps:CheckSpellUsable(classtable.trinket2, 'trinket2')) and (not MaxDps:CheckTrinketNames('TomeofLightsDevotion') and (not trinket_2_buffs or (trinket_2_buffs and ((buff[classtable.MetamorphosisBuff].up) or (buff[classtable.MetamorphosisBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('14')) or (trinket_1_buffs and MaxDps:CheckTrinketCooldown('13') <cooldown[classtable.Metamorphosis].remains))))) and cooldown[classtable.trinket2].ready then
         MaxDps:GlowCooldown(classtable.trinket2, cooldown[classtable.trinket2].ready)
     end
-    if (buff[classtable.GlaiveFlurryBuff].up or buff[classtable.RendingStrikeBuff].up or (MaxDps.spellHistory[1] == classtable.ReaversGlaive)) then
-        Vengeance:rg_sequence()
+    if (MaxDps:CheckSpellUsable(classtable.tome_of_lights_devotion, 'tome_of_lights_devotion')) and (buff[classtable.InnerResilienceBuff].up) and cooldown[classtable.tome_of_lights_devotion].ready then
+        MaxDps:GlowCooldown(classtable.tome_of_lights_devotion, cooldown[classtable.tome_of_lights_devotion].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.Metamorphosis, 'Metamorphosis')) and (timeInCombat <5 or cooldown[classtable.FelDevastation].remains >= 20) and cooldown[classtable.Metamorphosis].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Metamorphosis, 'Metamorphosis')) and (not buff[classtable.MetamorphosisBuff].up) and cooldown[classtable.Metamorphosis].ready then
         MaxDps:GlowCooldown(classtable.Metamorphosis, cooldown[classtable.Metamorphosis].ready)
+    end
+    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (not buff[classtable.RendingStrikeBuff].up and not buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.FelDevastation].ready then
+        if not setSpell then setSpell = classtable.FelDevastation end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (not buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (single_target and buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (not talents[classtable.Fracture] and buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.ReaversGlaive, 'ReaversGlaive')) and (not buff[classtable.RendingStrikeBuff].up and not buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.ReaversGlaive].ready then
+        if not setSpell then setSpell = classtable.ReaversGlaive end
     end
     if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and (not buff[classtable.ReaversGlaiveBuff].up and (buff[classtable.ArtoftheGlaiveBuff].count + SoulFragments)<20) and cooldown[classtable.TheHunt].ready then
         MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spb and (SoulFragments >2 or (MaxDps.spellHistory[1] == classtable.SigilofSpite) or (MaxDps.spellHistory[1] == classtable.SoulCarver) or (targets >= 4 and talents[classtable.Fallout] and cooldown[classtable.ImmolationAura].remains <gcd))) and cooldown[classtable.SpiritBomb].ready then
-        if not setSpell then setSpell = classtable.SpiritBomb end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and ((targets >= 4) or (not buff[classtable.ReaversGlaiveBuff].up or (double_rm_remains>((2 + 2+2 + gcd+(0.5 * gcd))+gcd)))) and cooldown[classtable.ImmolationAura].ready then
-        if not setSpell then setSpell = classtable.ImmolationAura end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and ((talents[classtable.AscendingFlame] or (not (MaxDps.spellHistory[1] == classtable.SigilofFlame) and debuff[classtable.SigilofFlameDeBuff].remains<(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))) and (not buff[classtable.ReaversGlaiveBuff].up or (double_rm_remains>((2 + 2+2 + gcd+(0.5 * gcd))+gcd)))) and cooldown[classtable.SigilofFlame].ready then
-        if not setSpell then setSpell = classtable.SigilofFlame end
-    end
-    if (buff[classtable.ReaversGlaiveBuff].up and targets <4 and debuff[classtable.ReaversMarkDeBuff].up and (double_rm_remains>(2 + 2+2 + gcd+(0.5 * gcd))) and (not buff[classtable.ThrilloftheFightDamageBuff].up or (buff[classtable.ThrilloftheFightDamageBuff].remains<(2 + 2+2 + gcd+(0.5 * gcd)))) and ((double_rm_remains-(2 + 2+2 + gcd+(0.5 * gcd)))>(2 + 2+2 + gcd+(0.5 * gcd))) and ((souls_before_next_rg_sequence >= 20) or (double_rm_remains>((2 + 2+2 + gcd+(0.5 * gcd))+cooldown[classtable.TheHunt].remains + 2)))) then
-        Vengeance:rg_overflow()
-    end
-    if (MaxDps:boss() and (ttd <10 or ttd <10)) then
-        Vengeance:ar_execute()
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (not buff[classtable.ReaversGlaiveBuff].up and (double_rm_remains<=(timeShift+(2 + 2+2 + gcd+(0.5 * gcd)))) and (SoulFragments <3 and ((buff[classtable.ArtoftheGlaiveBuff].count + SoulFragments)>=20))) and cooldown[classtable.SoulCleave].ready then
-        if not setSpell then setSpell = classtable.SoulCleave end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (not buff[classtable.ReaversGlaiveBuff].up and (double_rm_remains<=(timeShift+(2 + 2+2 + gcd+(0.5 * gcd)))) and ((buff[classtable.ArtoftheGlaiveBuff].count + SoulFragments)>=20)) and cooldown[classtable.SpiritBomb].ready then
-        if not setSpell then setSpell = classtable.SpiritBomb end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.BulkExtraction, 'BulkExtraction')) and (not buff[classtable.ReaversGlaiveBuff].up and (double_rm_remains<=(timeShift+(2 + 2+2 + gcd+(0.5 * gcd)))) and ((buff[classtable.ArtoftheGlaiveBuff].count+(math.max(targets , 5)))>=20)) and cooldown[classtable.BulkExtraction].ready then
-        if not setSpell then setSpell = classtable.BulkExtraction end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ReaversGlaive, 'ReaversGlaive')) and ((Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))>=30 and ((not buff[classtable.ThrilloftheFightAttackSpeedBuff].up or (double_rm_remains<=(2 + 2+2 + gcd+(0.5 * gcd)))) or (targets >= 4)) and not (buff[classtable.RendingStrikeBuff].up or buff[classtable.GlaiveFlurryBuff].up)) and cooldown[classtable.ReaversGlaive].ready then
-        if not setSpell then setSpell = classtable.ReaversGlaive end
-    end
-    if ((Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))<30 and ((not buff[classtable.ThrilloftheFightAttackSpeedBuff].up or (double_rm_remains<=(2 + 2+2 + gcd+(0.5 * gcd)))) or (targets >= 4))) then
-        Vengeance:rg_prep()
-    end
-    if (MaxDps:CheckSpellUsable(classtable.FieryBrand, 'FieryBrand')) and ((not talents[classtable.FieryDemise] and MaxDps:DebuffCounter(classtable.FieryBrandDeBuff) == 0) or (talents[classtable.DownInFlames] and (cooldown[classtable.FieryBrand].fullRecharge <gcd)) or (talents[classtable.FieryDemise] and MaxDps:DebuffCounter(classtable.FieryBrandDeBuff) == 0 and (buff[classtable.ReaversGlaiveBuff].up or cooldown[classtable.TheHunt].remains <5 or buff[classtable.ArtoftheGlaiveBuff].count >= 15 or buff[classtable.ThrilloftheFightDamageBuff].remains >5))) and cooldown[classtable.FieryBrand].ready then
+    if (MaxDps:CheckSpellUsable(classtable.FieryBrand, 'FieryBrand')) and (talents[classtable.FieryDemise] and not debuff[classtable.FieryBrandDeBuff].up) and cooldown[classtable.FieryBrand].ready then
         if not setSpell then setSpell = classtable.FieryBrand end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and (buff[classtable.ThrilloftheFightDamageBuff].up or (Fury >= 80 and (can_spb or can_spb_soon)) or ((SoulFragments + buff[classtable.ArtoftheGlaiveBuff].count+((1.1*(1 + format('%.0f',UnitSpellHaste('player'))))*(double_rm_remains-(2 + 2+2 + gcd+(0.5 * gcd)))))<20)) and cooldown[classtable.SigilofSpite].ready then
-        MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spb) and cooldown[classtable.SpiritBomb].ready then
-        if not setSpell then setSpell = classtable.SpiritBomb end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and ((can_spb or can_spb_soon) and Fury <40) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.VengefulRetreat, 'VengefulRetreat')) and ((can_spb or can_spb_soon) and Fury <40 and not cooldown[classtable.Felblade].ready and talents[classtable.UnhinderedAssault]) and cooldown[classtable.VengefulRetreat].ready then
-        MaxDps:GlowCooldown(classtable.VengefulRetreat, cooldown[classtable.VengefulRetreat].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and ((can_spb or can_spb_soon or can_spb_one_gcd) and Fury <40) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and (buff[classtable.ThrilloftheFightDamageBuff].up or ((SoulFragments + buff[classtable.ArtoftheGlaiveBuff].count+((1.1*(1 + format('%.0f',UnitSpellHaste('player'))))*(double_rm_remains-(2 + 2+2 + gcd+(0.5 * gcd)))))<20)) and cooldown[classtable.SoulCarver].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and (not talents[classtable.FieryDemise] or (talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up)) and cooldown[classtable.SoulCarver].ready then
         if not setSpell then setSpell = classtable.SoulCarver end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (not buff[classtable.MetamorphosisBuff].up and ((double_rm_remains>((2 + 2+2 + gcd+(0.5 * gcd))+2)) or (targets >= 4)) and ((cooldown[classtable.Fracture].fullRecharge<(2 + gcd)) or (not single_target and buff[classtable.ThrilloftheFightDamageBuff].up))) and cooldown[classtable.FelDevastation].ready then
-        if not setSpell then setSpell = classtable.FelDevastation end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (cooldown[classtable.FelDevastation].remains <gcd and Fury <50) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.VengefulRetreat, 'VengefulRetreat')) and (cooldown[classtable.FelDevastation].remains <gcd and Fury <50 and not cooldown[classtable.Felblade].ready and talents[classtable.UnhinderedAssault]) and cooldown[classtable.VengefulRetreat].ready then
-        MaxDps:GlowCooldown(classtable.VengefulRetreat, cooldown[classtable.VengefulRetreat].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (cooldown[classtable.FelDevastation].remains <gcd and Fury <50) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and ((cooldown[classtable.Fracture].fullRecharge <gcd) or buff[classtable.MetamorphosisBuff].up or can_spb or can_spb_soon or buff[classtable.WarbladesHungerBuff].count >= 5) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (SoulFragments >= 1) and cooldown[classtable.SoulCleave].ready then
-        if not setSpell then setSpell = classtable.SoulCleave end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.BulkExtraction, 'BulkExtraction')) and (targets >= 3) and cooldown[classtable.BulkExtraction].ready then
-        if not setSpell then setSpell = classtable.BulkExtraction end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and cooldown[classtable.SoulCleave].ready then
-        if not setSpell then setSpell = classtable.SoulCleave end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and cooldown[classtable.Shear].ready then
-        if not setSpell then setSpell = classtable.Shear end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ThrowGlaive, 'ThrowGlaive')) and cooldown[classtable.ThrowGlaive].ready then
-        if not setSpell then setSpell = classtable.ThrowGlaive end
-    end
-end
-function Vengeance:ar_execute()
-    if (MaxDps:CheckSpellUsable(classtable.Metamorphosis, 'Metamorphosis')) and cooldown[classtable.Metamorphosis].ready then
-        MaxDps:GlowCooldown(classtable.Metamorphosis, cooldown[classtable.Metamorphosis].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ReaversGlaive, 'ReaversGlaive')) and ((Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))>=30 and not (buff[classtable.RendingStrikeBuff].up or buff[classtable.GlaiveFlurryBuff].up)) and cooldown[classtable.ReaversGlaive].ready then
-        if not setSpell then setSpell = classtable.ReaversGlaive end
-    end
-    if (buff[classtable.ReaversGlaiveBuff].up and (Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))<30) then
-        Vengeance:rg_prep()
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and (not buff[classtable.ReaversGlaiveBuff].up) and cooldown[classtable.TheHunt].ready then
-        MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.BulkExtraction, 'BulkExtraction')) and (targets >= 3 and buff[classtable.ArtoftheGlaiveBuff].count >= 20) and cooldown[classtable.BulkExtraction].ready then
-        if not setSpell then setSpell = classtable.BulkExtraction end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and cooldown[classtable.SigilofFlame].ready then
-        if not setSpell then setSpell = classtable.SigilofFlame end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.FieryBrand, 'FieryBrand')) and cooldown[classtable.FieryBrand].ready then
-        if not setSpell then setSpell = classtable.FieryBrand end
     end
     if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and cooldown[classtable.SoulCarver].ready then
-        if not setSpell then setSpell = classtable.SoulCarver end
+    if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and (talents[classtable.Fallout]) and cooldown[classtable.ImmolationAura].ready then
+        if not setSpell then setSpell = classtable.ImmolationAura end
     end
-    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and cooldown[classtable.FelDevastation].ready then
-        if not setSpell then setSpell = classtable.FelDevastation end
+    if (MaxDps:CheckSpellUsable(classtable.BulkExtraction, 'BulkExtraction')) and (targets >= 3) and cooldown[classtable.BulkExtraction].ready then
+        if not setSpell then setSpell = classtable.BulkExtraction end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and buff[classtable.MetamorphosisBuff].up) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and cooldown[classtable.SigilofFlame].ready then
+        if not setSpell then setSpell = classtable.SigilofFlame end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture]) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (targets >= 12 and soul_fragments.active >= 4) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and cooldown[classtable.ImmolationAura].ready then
+        if not setSpell then setSpell = classtable.ImmolationAura end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
+        if not setSpell then setSpell = classtable.Felblade end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.VengefulRetreat, 'VengefulRetreat')) and (talents[classtable.UnhinderedAssault]) and cooldown[classtable.VengefulRetreat].ready then
+        MaxDps:GlowCooldown(classtable.VengefulRetreat, cooldown[classtable.VengefulRetreat].ready)
+    end
+    if (MaxDps:CheckSpellUsable(classtable.ThrowGlaive, 'ThrowGlaive')) and cooldown[classtable.ThrowGlaive].ready then
+        if not setSpell then setSpell = classtable.ThrowGlaive end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (not talents[classtable.Fracture]) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
 end
 function Vengeance:fel_dev()
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (buff[classtable.DemonsurgeSpiritBurstBuff].up and (can_spburst or SoulFragments >= 4 or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (buff[classtable.DemonsurgeSpiritBurstBuff].up and (can_spburst or soul_fragments.active >= 4 or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (buff[classtable.DemonsurgeSoulSunderBuff].up and (not buff[classtable.DemonsurgeSpiritBurstBuff].up or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (buff[classtable.DemonsurgeSoulSunderBuff].up and (not buff[classtable.DemonsurgeSpiritBurstBuff].up or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
     end
     if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and ((not talents[classtable.CycleofBinding] or (cooldown[classtable.SigilofSpite].duration<(cooldown[classtable.Metamorphosis].remains + 18))) and (SoulFragments <= 2 and buff[classtable.DemonsurgeSpiritBurstBuff].up)) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
@@ -371,14 +252,14 @@ function Vengeance:fel_dev()
     if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and (SoulFragments <= 2 and not (MaxDps.spellHistory[1] == classtable.SigilofSpite) and buff[classtable.DemonsurgeSpiritBurstBuff].up) and cooldown[classtable.SoulCarver].ready then
         if not setSpell then setSpell = classtable.SoulCarver end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (SoulFragments <= 2 and buff[classtable.DemonsurgeSpiritBurstBuff].up) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and SoulFragments <= 2 and buff[classtable.DemonsurgeSpiritBurstBuff].up) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
     if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or buff[classtable.DemonsurgeSoulSunderBuff].up) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or buff[classtable.DemonsurgeSoulSunderBuff].up) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and buff[classtable.DemonsurgeSpiritBurstBuff].up or buff[classtable.DemonsurgeSoulSunderBuff].up) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
 end
 function Vengeance:fel_dev_prep()
@@ -391,23 +272,23 @@ function Vengeance:fel_dev_prep()
     if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (((Fury + fel_dev_passive_fury_gen)>=120) and (can_spburst or can_spburst_soon or SoulFragments >= 4)) and cooldown[classtable.FelDevastation].ready then
         if not setSpell then setSpell = classtable.FelDevastation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and ((not talents[classtable.CycleofBinding] or (cooldown[classtable.SigilofSpite].duration<(cooldown[classtable.Metamorphosis].remains + 18))) and (SoulFragments <= 1 or (not (can_spburst or can_spburst_soon or SoulFragments >= 4) and cooldown[classtable.Fracture].charges <1))) and cooldown[classtable.SigilofSpite].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and ((not talents[classtable.CycleofBinding] or (cooldown[classtable.SigilofSpite].duration<(cooldown[classtable.Metamorphosis].remains + 18))) and (SoulFragments <= 1 or (not (can_spburst or can_spburst_soon or SoulFragments >= 4) and (not talents[classtable.Fracture] or cooldown[classtable.Shear].charges <1)))) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and ((not talents[classtable.CycleofBinding] or cooldown[classtable.Metamorphosis].remains >20) and (SoulFragments <= 1 or (not (can_spburst or can_spburst_soon or SoulFragments >= 4) and cooldown[classtable.Fracture].charges <1)) and not (MaxDps.spellHistory[1] == classtable.SigilofSpite) and not (MaxDps.spellHistory[1] == classtable.SigilofSpite)) and cooldown[classtable.SoulCarver].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and ((not talents[classtable.CycleofBinding] or cooldown[classtable.Metamorphosis].remains >20) and (SoulFragments <= 1 or (not (can_spburst or can_spburst_soon or SoulFragments >= 4) and (not talents[classtable.Fracture] or cooldown[classtable.Shear].charges <1))) and not (MaxDps.spellHistory[1] == classtable.SigilofSpite) and not (MaxDps.spellHistory[1] == classtable.SigilofSpite)) and cooldown[classtable.SoulCarver].ready then
         if not setSpell then setSpell = classtable.SoulCarver end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and ((Fury + fel_dev_passive_fury_gen)<120 and (can_spburst or can_spburst_soon or SoulFragments >= 4)) and cooldown[classtable.Felblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (not ((Fury + fel_dev_passive_fury_gen)>=120) and (can_spburst or can_spburst_soon or SoulFragments >= 4)) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (not (can_spburst or can_spburst_soon or SoulFragments >= 4) or (Fury + fel_dev_passive_fury_gen)<120) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and not (can_spburst or can_spburst_soon or SoulFragments >= 4) or not ((Fury + fel_dev_passive_fury_gen)>=120)) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
     if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture]) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
     if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and cooldown[classtable.FelDevastation].ready then
         if not setSpell then setSpell = classtable.FelDevastation end
@@ -438,7 +319,7 @@ function Vengeance:fs()
         fel_dev_passive_fury_gen = fel_dev_passive_fury_gen+2.5 * floor((math.max(buff[classtable.StudentofSufferingBuff].remains , fel_dev_sequence_time)))
     end
     if (cooldown[classtable.SigilofFlame].remains <fel_dev_sequence_time) then
-        fel_dev_passive_fury_gen = fel_dev_passive_fury_gen+30+(2 * (talents[classtable.FlamesofFury] and talents[classtable.FlamesofFury] or 0)*targets)
+        fel_dev_passive_fury_gen = fel_dev_passive_fury_gen+30+(2*((talents[classtable.FlamesofFury] and talents[classtable.FlamesofFury] or 0))*targets)
     end
     if cooldown[classtable.ImmolationAura].remains <fel_dev_sequence_time then
         fel_dev_passive_fury_gen = fel_dev_passive_fury_gen+8
@@ -498,12 +379,12 @@ function Vengeance:fs()
     end
     meta_prep_time = meta_prep_time+2 * cooldown[classtable.SigilofFlame].charges
     if buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeHardcastBuff].up then
-        dont_soul_cleave = buff[classtable.DemonsurgeSpiritBurstBuff].up or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2) and ((Fury + fel_dev_passive_fury_gen)<120 or not (can_spburst or can_spburst_soon or SoulFragments >= 4)))
+        dont_soul_cleave = buff[classtable.DemonsurgeSpiritBurstBuff].up or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2) and (not ((Fury + fel_dev_passive_fury_gen)>=120) or not (can_spburst or can_spburst_soon or SoulFragments >= 4)))
     else
-        dont_soul_cleave = (cooldown[classtable.FelDevastation].remains<(gcd * 3) and ((Fury + fel_dev_passive_fury_gen)<120) or not (can_spburst or can_spburst_soon or SoulFragments >= 4))
+        dont_soul_cleave = (cooldown[classtable.FelDevastation].remains<(gcd * 3) and (not ((Fury + fel_dev_passive_fury_gen)>=120) or not (can_spburst or can_spburst_soon or SoulFragments >= 4)))
     end
     if talents[classtable.DownInFlames] then
-        fiery_brand_back_before_meta = cooldown[classtable.FieryBrand].charges >= cooldown[classtable.FieryBrand].maxCharges or (cooldown[classtable.FieryBrand].charges >= 1 and cooldown[classtable.FieryBrand].fullRecharge <= gcd+timeShift) or (cooldown[classtable.FieryBrand].charges >= 1 and ((1-(cooldown[classtable.FieryBrand].charges - 1))*cooldown[classtable.FieryBrand].duration)<=cooldown[classtable.Metamorphosis].remains)
+        fiery_brand_back_before_meta = cooldown[classtable.FieryBrand].charges >= cooldown[classtable.FieryBrand].maxCharges or (cooldown[classtable.FieryBrand].charges >= 1 and cooldown[classtable.FieryBrand].fullRecharge <= MaxDps:CooldownConsolidated(61304).remains+timeShift) or (cooldown[classtable.FieryBrand].charges >= 1 and ((1-(cooldown[classtable.FieryBrand].charges - 1))*cooldown[classtable.FieryBrand].duration)<=cooldown[classtable.Metamorphosis].remains)
     else
         fiery_brand_back_before_meta = (cooldown[classtable.FieryBrand].duration <= cooldown[classtable.Metamorphosis].remains)
     end
@@ -528,11 +409,14 @@ function Vengeance:fs()
         hold_sof_for_dot = (MaxDps.spellHistory[1] == classtable.SigilofFlame) or (debuff[classtable.SigilofFlameDeBuff].remains>(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))
     end
     hold_sof_for_precombat = (talents[classtable.IlluminatedSigils] and timeInCombat<(2 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))
-    if (MaxDps:CheckSpellUsable(classtable.trinket1, 'trinket1')) and (not trinket_1_buffs or (trinket_1_buffs and ((buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeHardcastBuff].up) or (buff[classtable.MetamorphosisBuff].up and not buff[classtable.DemonsurgeHardcastBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('13')) or (trinket_2_buffs and MaxDps:CheckTrinketCooldown('14') <cooldown[classtable.Metamorphosis].remains)))) and cooldown[classtable.trinket1].ready then
+    if (MaxDps:CheckSpellUsable(classtable.trinket1, 'trinket1')) and (not MaxDps:CheckTrinketNames('TomeofLightsDevotion') and (not trinket_1_buffs or (trinket_1_buffs and ((buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeHardcastBuff].up) or (buff[classtable.MetamorphosisBuff].up and not buff[classtable.DemonsurgeHardcastBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('13')) or (trinket_2_buffs and MaxDps:CheckTrinketCooldown('14') <cooldown[classtable.Metamorphosis].remains))))) and cooldown[classtable.trinket1].ready then
         MaxDps:GlowCooldown(classtable.trinket1, cooldown[classtable.trinket1].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.trinket2, 'trinket2')) and (not trinket_2_buffs or (trinket_2_buffs and ((buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeHardcastBuff].up) or (buff[classtable.MetamorphosisBuff].up and not buff[classtable.DemonsurgeHardcastBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('14')) or (trinket_1_buffs and MaxDps:CheckTrinketCooldown('13') <cooldown[classtable.Metamorphosis].remains)))) and cooldown[classtable.trinket2].ready then
+    if (MaxDps:CheckSpellUsable(classtable.trinket2, 'trinket2')) and (not MaxDps:CheckTrinketNames('TomeofLightsDevotion') and (not trinket_2_buffs or (trinket_2_buffs and ((buff[classtable.MetamorphosisBuff].up and buff[classtable.DemonsurgeHardcastBuff].up) or (buff[classtable.MetamorphosisBuff].up and not buff[classtable.DemonsurgeHardcastBuff].up and cooldown[classtable.Metamorphosis].remains <10) or (cooldown[classtable.Metamorphosis].remains >MaxDps:CheckTrinketCooldownDuration('14')) or (trinket_1_buffs and MaxDps:CheckTrinketCooldown('13') <cooldown[classtable.Metamorphosis].remains))))) and cooldown[classtable.trinket2].ready then
         MaxDps:GlowCooldown(classtable.trinket2, cooldown[classtable.trinket2].ready)
+    end
+    if (MaxDps:CheckSpellUsable(classtable.tome_of_lights_devotion, 'tome_of_lights_devotion')) and (buff[classtable.InnerResilienceBuff].up) and cooldown[classtable.tome_of_lights_devotion].ready then
+        MaxDps:GlowCooldown(classtable.tome_of_lights_devotion, cooldown[classtable.tome_of_lights_devotion].ready)
     end
     if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and (timeInCombat <4) and cooldown[classtable.ImmolationAura].ready then
         if not setSpell then setSpell = classtable.ImmolationAura end
@@ -576,41 +460,35 @@ function Vengeance:fs()
     if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and ((not talents[classtable.CycleofBinding] or (cooldown[classtable.SigilofSpite].duration<(cooldown[classtable.Metamorphosis].remains + 18))) and (not talents[classtable.SpiritBomb] or (Fury >= 80 and (can_spbomb or can_spbomb_soon)) or (SoulFragments<=(2 - (talents[classtable.SoulSigils] and talents[classtable.SoulSigils] or 0))))) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (can_spburst and talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up and cooldown[classtable.FelDevastation].remains>=(gcd * 3)) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spbomb and talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up and cooldown[classtable.FelDevastation].remains>=(gcd * 3)) and cooldown[classtable.SpiritBomb].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spburst and talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up and not (cooldown[classtable.FelDevastation].remains<(gcd * 3))) and cooldown[classtable.SpiritBomb].ready then
         if not setSpell then setSpell = classtable.SpiritBomb end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (single_target and not dont_soul_cleave) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spbomb and talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up and not (cooldown[classtable.FelDevastation].remains<(gcd * 3))) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
     end
     if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (single_target and not dont_soul_cleave) and cooldown[classtable.SoulCleave].ready then
         if not setSpell then setSpell = classtable.SoulCleave end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (can_spburst and cooldown[classtable.FelDevastation].remains>=(gcd * 3)) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spburst and not (cooldown[classtable.FelDevastation].remains<(gcd * 3))) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spbomb and cooldown[classtable.FelDevastation].remains>=(gcd * 3)) and cooldown[classtable.SpiritBomb].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spbomb and not (cooldown[classtable.FelDevastation].remains<(gcd * 3))) and cooldown[classtable.SpiritBomb].ready then
         if not setSpell then setSpell = classtable.SpiritBomb end
     end
     if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (((Fury <40 and ((buff[classtable.MetamorphosisBuff].up and (can_spburst or can_spburst_soon)) or (not buff[classtable.MetamorphosisBuff].up and (can_spbomb or can_spbomb_soon)))))) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (((Fury <40 and ((buff[classtable.MetamorphosisBuff].up and (can_spburst or can_spburst_soon)) or (not buff[classtable.MetamorphosisBuff].up and (can_spbomb or can_spbomb_soon)))) or (buff[classtable.MetamorphosisBuff].up and can_spburst_one_gcd) or (not buff[classtable.MetamorphosisBuff].up and can_spbomb_one_gcd))) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and ((Fury <40 and ((buff[classtable.MetamorphosisBuff].up and (can_spburst or can_spburst_soon)) or (not buff[classtable.MetamorphosisBuff].up and (can_spbomb or can_spbomb_soon)))) or (buff[classtable.MetamorphosisBuff].up and can_spburst_one_gcd) or (not buff[classtable.MetamorphosisBuff].up and can_spbomb_one_gcd))) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
     if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (FuryDeficit >= 40) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (not dont_soul_cleave) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
-    end
     if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (not dont_soul_cleave) and cooldown[classtable.SoulCleave].ready then
         if not setSpell then setSpell = classtable.SoulCleave end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture]) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
     if (MaxDps:CheckSpellUsable(classtable.ThrowGlaive, 'ThrowGlaive')) and cooldown[classtable.ThrowGlaive].ready then
         if not setSpell then setSpell = classtable.ThrowGlaive end
@@ -651,34 +529,34 @@ function Vengeance:meta_prep()
     end
 end
 function Vengeance:metamorphosis()
-    if (MaxDps:CheckSpellUsable(classtable.FelDesolation, 'FelDesolation')) and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDesolation].ready then
-        if not setSpell then setSpell = classtable.FelDesolation end
+    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDevastation].ready then
+        if not setSpell then setSpell = classtable.FelDevastation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (Fury <50 and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDesolation].ready) and cooldown[classtable.Felblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (Fury <50 and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDevastation].ready) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (Fury <50 and not cooldown[classtable.Felblade].ready and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDesolation].ready) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and Fury <50 and not cooldown[classtable.Felblade].ready and (buff[classtable.MetamorphosisBuff].remains<(gcd * 3)) and cooldown[classtable.FelDevastation].ready) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofDoom, 'SigilofDoom')) and (talents[classtable.IlluminatedSigils] and talents[classtable.CycleofBinding] and cooldown[classtable.SigilofDoom].charges == cooldown[classtable.SigilofDoom].maxCharges) and cooldown[classtable.SigilofDoom].ready then
-        if not setSpell then setSpell = classtable.SigilofDoom end
+    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (talents[classtable.IlluminatedSigils] and talents[classtable.CycleofBinding] and cooldown[classtable.SigilofFlame].charges == cooldown[classtable.SigilofFlame].maxCharges) and cooldown[classtable.SigilofFlame].ready then
+        if not setSpell then setSpell = classtable.SigilofFlame end
     end
     if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and cooldown[classtable.ImmolationAura].ready then
         if not setSpell then setSpell = classtable.ImmolationAura end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofDoom, 'SigilofDoom')) and (not talents[classtable.StudentofSuffering] and (talents[classtable.AscendingFlame] or (not talents[classtable.AscendingFlame] and not (MaxDps.spellHistory[1] == classtable.SigilofDoom) and (debuff[classtable.SigilofDoomDeBuff].remains<(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))))) and cooldown[classtable.SigilofDoom].ready then
-        if not setSpell then setSpell = classtable.SigilofDoom end
+    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (not talents[classtable.StudentofSuffering] and (talents[classtable.AscendingFlame] or (not talents[classtable.AscendingFlame] and not (MaxDps.spellHistory[1] == classtable.SigilofFlame) and (debuff[classtable.SigilofDoomDeBuff].remains<(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))))) and cooldown[classtable.SigilofFlame].ready then
+        if not setSpell then setSpell = classtable.SigilofFlame end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofDoom, 'SigilofDoom')) and (talents[classtable.StudentofSuffering] and not (MaxDps.spellHistory[1] == classtable.SigilofFlame) and not (MaxDps.spellHistory[1] == classtable.SigilofDoom) and (buff[classtable.StudentofSufferingBuff].remains<(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))) and cooldown[classtable.SigilofDoom].ready then
-        if not setSpell then setSpell = classtable.SigilofDoom end
+    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (talents[classtable.StudentofSuffering] and not (MaxDps.spellHistory[1] == classtable.SigilofFlame) and not (MaxDps.spellHistory[1] == classtable.SigilofFlame) and (buff[classtable.StudentofSufferingBuff].remains<(4 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0)))) and cooldown[classtable.SigilofFlame].ready then
+        if not setSpell then setSpell = classtable.SigilofFlame end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofDoom, 'SigilofDoom')) and (buff[classtable.MetamorphosisBuff].remains<((2 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0))+(cooldown[classtable.SigilofDoom].charges * gcd))) and cooldown[classtable.SigilofDoom].ready then
-        if not setSpell then setSpell = classtable.SigilofDoom end
+    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (buff[classtable.MetamorphosisBuff].remains<((2 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0))+(cooldown[classtable.SigilofFlame].charges * gcd))) and cooldown[classtable.SigilofFlame].ready then
+        if not setSpell then setSpell = classtable.SigilofFlame end
     end
-    if (MaxDps:CheckSpellUsable(classtable.FelDesolation, 'FelDesolation')) and (SoulFragments <= 3 and (SoulFragments >= 2 or (MaxDps.spellHistory[1] == classtable.SigilofSpite))) and cooldown[classtable.FelDesolation].ready then
-        if not setSpell then setSpell = classtable.FelDesolation end
+    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (soul_fragments.active <= 3 and (SoulFragments >= 2 or (MaxDps.spellHistory[1] == classtable.SigilofSpite))) and cooldown[classtable.FelDevastation].ready then
+        if not setSpell then setSpell = classtable.FelDevastation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (((cooldown[classtable.SigilofSpite].remains <timeShift or cooldown[classtable.SoulCarver].remains <timeShift) and cooldown[classtable.FelDesolation].remains<(timeShift + gcd) and Fury <50)) and cooldown[classtable.Felblade].ready then
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (((cooldown[classtable.SigilofSpite].remains <timeShift or cooldown[classtable.SoulCarver].remains <timeShift) and cooldown[classtable.FelDevastation].remains<(timeShift + gcd) and Fury <50)) and cooldown[classtable.Felblade].ready then
         if not setSpell then setSpell = classtable.Felblade end
     end
     if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and ((not talents[classtable.SpiritBomb] or (single_target and not buff[classtable.DemonsurgeSpiritBurstBuff].up)) or (((SoulFragments + 3)<=6) and Fury >= 40 and not (MaxDps.spellHistory[1] == classtable.SigilofSpite))) and cooldown[classtable.SoulCarver].ready then
@@ -687,120 +565,47 @@ function Vengeance:metamorphosis()
     if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and (not talents[classtable.SpiritBomb] or (Fury >= 80 and (can_spburst or can_spburst_soon)) or (SoulFragments<=(2 - (talents[classtable.SoulSigils] and talents[classtable.SoulSigils] or 0)))) and cooldown[classtable.SigilofSpite].ready then
         MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (can_spburst and buff[classtable.DemonsurgeSpiritBurstBuff].up) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.FelDesolation, 'FelDesolation')) and cooldown[classtable.FelDesolation].ready then
-        if not setSpell then setSpell = classtable.FelDesolation end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and cooldown[classtable.TheHunt].ready then
-        MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (buff[classtable.DemonsurgeSoulSunderBuff].up and not buff[classtable.DemonsurgeSpiritBurstBuff].up and not can_spburst_one_gcd) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (can_spburst and (talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe) and buff[classtable.MetamorphosisBuff].remains>(gcd * 2)) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (Fury <40 and (can_spburst or can_spburst_soon) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe)) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (Fury <40 and (can_spburst or can_spburst_soon or can_spburst_one_gcd) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe)) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (can_spburst_one_gcd and (buff[classtable.DemonsurgeSpiritBurstBuff].up or big_aoe) and not (MaxDps.spellHistory[1] == classtable.Fracture)) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (single_target and not dont_soul_cleave) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBurst, 'SpiritBurst')) and (can_spburst and buff[classtable.MetamorphosisBuff].remains>(gcd * 2)) and cooldown[classtable.SpiritBurst].ready then
-        if not setSpell then setSpell = classtable.SpiritBurst end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (FuryDeficit >= 40) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulSunder, 'SoulSunder')) and (not dont_soul_cleave and not (big_aoe and (can_spburst or can_spburst_soon))) and cooldown[classtable.SoulSunder].ready then
-        if not setSpell then setSpell = classtable.SoulSunder end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (not (MaxDps.spellHistory[1] == classtable.Fracture)) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-end
-function Vengeance:rg_overflow()
-    trigger_overflow = 1
-    rg_enhance_cleave = 1
-    if (MaxDps:CheckSpellUsable(classtable.ReaversGlaive, 'ReaversGlaive')) and ((Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))>=30 and not buff[classtable.RendingStrikeBuff].up and not buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.ReaversGlaive].ready then
-        if not setSpell then setSpell = classtable.ReaversGlaive end
-    end
-    if ((Fury+(rg_enhance_cleave * 25)+((talents[classtable.KeenEngagement] and talents[classtable.KeenEngagement] or 0) * 20))<30) then
-        Vengeance:rg_prep()
-    end
-end
-function Vengeance:rg_prep()
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.VengefulRetreat, 'VengefulRetreat')) and (not cooldown[classtable.Felblade].ready and talents[classtable.UnhinderedAssault]) and cooldown[classtable.VengefulRetreat].ready then
-        MaxDps:GlowCooldown(classtable.VengefulRetreat, cooldown[classtable.VengefulRetreat].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and cooldown[classtable.SigilofFlame].ready then
-        if not setSpell then setSpell = classtable.SigilofFlame end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.ImmolationAura, 'ImmolationAura')) and cooldown[classtable.ImmolationAura].ready then
-        if not setSpell then setSpell = classtable.ImmolationAura end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-end
-function Vengeance:rg_sequence()
-    if ((Fury <30 and ((not rg_enhance_cleave and buff[classtable.GlaiveFlurryBuff].up and buff[classtable.RendingStrikeBuff].up) or (rg_enhance_cleave and not buff[classtable.RendingStrikeBuff].up))) or (cooldown[classtable.Fracture].charges <1 and ((rg_enhance_cleave and buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) or (not rg_enhance_cleave and not buff[classtable.GlaiveFlurryBuff].up)))) then
-        Vengeance:rg_sequence_filler()
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (((rg_enhance_cleave and buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) or (not rg_enhance_cleave and not buff[classtable.GlaiveFlurryBuff].up))) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (((rg_enhance_cleave and buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) or (not rg_enhance_cleave and not buff[classtable.GlaiveFlurryBuff].up))) and cooldown[classtable.Shear].ready then
-        if not setSpell then setSpell = classtable.Shear end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (((not rg_enhance_cleave and buff[classtable.GlaiveFlurryBuff].up and buff[classtable.RendingStrikeBuff].up) or (rg_enhance_cleave and not buff[classtable.RendingStrikeBuff].up))) and cooldown[classtable.SoulCleave].ready then
-        if not setSpell then setSpell = classtable.SoulCleave end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (buff[classtable.RendingStrikeBuff].up and not buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (buff[classtable.RendingStrikeBuff].up and not buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.Shear].ready then
-        if not setSpell then setSpell = classtable.Shear end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (not buff[classtable.RendingStrikeBuff].up and buff[classtable.GlaiveFlurryBuff].up) and cooldown[classtable.SoulCleave].ready then
-        if not setSpell then setSpell = classtable.SoulCleave end
-    end
-end
-function Vengeance:rg_sequence_filler()
-    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
-        if not setSpell then setSpell = classtable.Felblade end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.Fracture, 'Fracture') and talents[classtable.Fracture]) and (not buff[classtable.RendingStrikeBuff].up) and cooldown[classtable.Fracture].ready then
-        if not setSpell then setSpell = classtable.Fracture end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and cooldown[classtable.SigilofFlame].ready then
-        if not setSpell then setSpell = classtable.SigilofFlame end
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SigilofSpite, 'SigilofSpite')) and cooldown[classtable.SigilofSpite].ready then
-        MaxDps:GlowCooldown(classtable.SigilofSpite, cooldown[classtable.SigilofSpite].ready)
-    end
-    if (MaxDps:CheckSpellUsable(classtable.SoulCarver, 'SoulCarver') and talents[classtable.SoulCarver]) and cooldown[classtable.SoulCarver].ready then
-        if not setSpell then setSpell = classtable.SoulCarver end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spburst and buff[classtable.DemonsurgeSpiritBurstBuff].up) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
     end
     if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and cooldown[classtable.FelDevastation].ready then
         if not setSpell then setSpell = classtable.FelDevastation end
     end
-    if (MaxDps:CheckSpellUsable(classtable.ThrowGlaive, 'ThrowGlaive')) and cooldown[classtable.ThrowGlaive].ready then
-        if not setSpell then setSpell = classtable.ThrowGlaive end
+    if (MaxDps:CheckSpellUsable(classtable.TheHunt, 'TheHunt')) and cooldown[classtable.TheHunt].ready then
+        MaxDps:GlowCooldown(classtable.TheHunt, cooldown[classtable.TheHunt].ready)
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (buff[classtable.DemonsurgeSoulSunderBuff].up and not buff[classtable.DemonsurgeSpiritBurstBuff].up and not can_spburst_one_gcd) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spburst and (talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe) and buff[classtable.MetamorphosisBuff].remains>(gcd * 2)) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (Fury <40 and (can_spburst or can_spburst_soon) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe)) and cooldown[classtable.Felblade].ready then
+        if not setSpell then setSpell = classtable.Felblade end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and Fury <40 and (can_spburst or can_spburst_soon or can_spburst_one_gcd) and (buff[classtable.DemonsurgeSpiritBurstBuff].up or talents[classtable.FieryDemise] and debuff[classtable.FieryBrandDeBuff].up or big_aoe)) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and can_spburst_one_gcd and (buff[classtable.DemonsurgeSpiritBurstBuff].up or big_aoe) and not (MaxDps.spellHistory[1] == classtable.Shear)) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (single_target and not dont_soul_cleave) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (can_spburst and buff[classtable.MetamorphosisBuff].remains>(gcd * 2)) and cooldown[classtable.SpiritBomb].ready then
+        if not setSpell then setSpell = classtable.SpiritBomb end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (FuryDeficit >= 40) and cooldown[classtable.Felblade].ready then
+        if not setSpell then setSpell = classtable.Felblade end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (not dont_soul_cleave and not (big_aoe and (can_spburst or can_spburst_soon))) and cooldown[classtable.SoulCleave].ready then
+        if not setSpell then setSpell = classtable.SoulCleave end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and cooldown[classtable.Felblade].ready then
+        if not setSpell then setSpell = classtable.Felblade end
+    end
+    if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture] and not (MaxDps.spellHistory[1] == classtable.Shear)) and cooldown[classtable.Shear].ready then
+        if not setSpell then setSpell = classtable.Shear end
     end
 end
 
@@ -808,13 +613,14 @@ end
 local function ClearCDs()
     MaxDps:GlowCooldown(classtable.Disrupt, false)
     MaxDps:GlowCooldown(classtable.DemonSpikes, false)
+    MaxDps:GlowCooldown(classtable.InfernalStrike, false)
     MaxDps:GlowCooldown(classtable.trinket1, false)
     MaxDps:GlowCooldown(classtable.trinket2, false)
+    MaxDps:GlowCooldown(classtable.tome_of_lights_devotion, false)
     MaxDps:GlowCooldown(classtable.Metamorphosis, false)
     MaxDps:GlowCooldown(classtable.TheHunt, false)
     MaxDps:GlowCooldown(classtable.SigilofSpite, false)
     MaxDps:GlowCooldown(classtable.VengefulRetreat, false)
-    MaxDps:GlowCooldown(classtable.InfernalStrike, false)
 end
 
 function Vengeance:callaction()
@@ -839,8 +645,7 @@ function Vengeance:callaction()
         num_spawnable_souls = num_spawnable_souls+1
     end
     if (MaxDps:CheckSpellUsable(classtable.InfernalStrike, 'InfernalStrike')) and cooldown[classtable.InfernalStrike].ready then
-        --if not setSpell then setSpell = classtable.InfernalStrike end
-        MaxDps:GlowCooldown(classtable.InfernalStrike, true)
+        MaxDps:GlowCooldown(classtable.InfernalStrike, cooldown[classtable.InfernalStrike].ready)
     end
     if (not (MaxDps.ActiveHeroTree == 'felscarred')) then
         Vengeance:ar()
@@ -885,12 +690,6 @@ function DemonHunter:Vengeance()
     PainPerc = (Pain / PainMax) * 100
     PainRegen = GetPowerRegenForPowerType(PainPT)
     PainTimeToMax = PainDeficit / PainRegen
-    --SoulFragments = UnitPower('player', SoulFragmentsPT)
-    --SoulFragmentsMax = UnitPowerMax('player', SoulFragmentsPT)
-    --SoulFragmentsDeficit = SoulFragmentsMax - SoulFragments
-    --SoulFragmentsPerc = (SoulFragments / SoulFragmentsMax) * 100
-    --SoulFragmentsRegen = GetPowerRegenForPowerType(SoulFragmentsPT)
-    --SoulFragmentsTimeToMax = SoulFragmentsDeficit / SoulFragmentsRegen
     SpellHaste = UnitSpellHaste('player')
     SpellCrit = GetCritChance()
     SoulFragments = GetNumSoulFragments()
@@ -900,13 +699,11 @@ function DemonHunter:Vengeance()
     --end
     classtable.DemonSpikesBuff = 203819
     classtable.MetamorphosisBuff = 162264
-    classtable.GlaiveFlurryBuff = 442435
+    classtable.InnerResilienceBuff = 450706
     classtable.RendingStrikeBuff = 442442
-    classtable.ArtoftheGlaiveBuff = 444661
-    classtable.ThrilloftheFightDamageBuff = 442688
+    classtable.GlaiveFlurryBuff = 442435
     classtable.ReaversGlaiveBuff = 442294
-    classtable.ThrilloftheFightAttackSpeedBuff = 442695
-    classtable.WarbladesHungerBuff = 442503
+    classtable.ArtoftheGlaiveBuff = 444661
     classtable.DemonsurgeSpiritBurstBuff = 0
     classtable.DemonsurgeSoulSunderBuff = 0
     classtable.StudentofSufferingBuff = 453239
@@ -914,12 +711,8 @@ function DemonHunter:Vengeance()
     classtable.DemonsurgeHardcastBuff = 452489
     classtable.FieryBrandDeBuff = 207771
     classtable.SigilofFlameDeBuff = 204598
-    classtable.ReaversMarkDeBuff = 442624
     classtable.SigilofDoomDeBuff = 462030
     classtable.ReaversGlaive = 442294
-    classtable.SpiritBurst = 452437
-    classtable.SoulSunder = 452436
-    classtable.FelDesolation = 452486
     classtable.SigilofDoom = 452490
 
     local function debugg()
@@ -927,16 +720,16 @@ function DemonHunter:Vengeance()
         talents[classtable.SoulSigils] = 1
         talents[classtable.Fracture] = 1
         talents[classtable.SoulCarver] = 1
-        talents[classtable.Fallout] = 1
-        talents[classtable.AscendingFlame] = 1
         talents[classtable.FieryDemise] = 1
-        talents[classtable.DownInFlames] = 1
+        talents[classtable.Fallout] = 1
         talents[classtable.UnhinderedAssault] = 1
         talents[classtable.CycleofBinding] = 1
         talents[classtable.VolatileFlameblood] = 1
         talents[classtable.DarkglareBoon] = 1
         talents[classtable.SpiritBomb] = 1
+        talents[classtable.DownInFlames] = 1
         talents[classtable.IlluminatedSigils] = 1
+        talents[classtable.AscendingFlame] = 1
     end
 
 
