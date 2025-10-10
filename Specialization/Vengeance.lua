@@ -217,7 +217,7 @@ function Vengeance:ar()
     if (MaxDps:CheckSpellUsable(classtable.Shear, 'Shear')) and (talents[classtable.Fracture]) and cooldown[classtable.Shear].ready then
         if not setSpell then setSpell = classtable.Shear end
     end
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (targets >= 12 and soul_fragments.active >= 4) and cooldown[classtable.SpiritBomb].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (targets >= 12 and SoulFragments >= 4) and cooldown[classtable.SpiritBomb].ready then
         if not setSpell then setSpell = classtable.SpiritBomb end
     end
     if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and cooldown[classtable.SoulCleave].ready then
@@ -240,7 +240,7 @@ function Vengeance:ar()
     end
 end
 function Vengeance:fel_dev()
-    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (buff[classtable.DemonsurgeSpiritBurstBuff].up and (can_spburst or soul_fragments.active >= 4 or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SpiritBomb].ready then
+    if (MaxDps:CheckSpellUsable(classtable.SpiritBomb, 'SpiritBomb') and talents[classtable.SpiritBomb]) and (buff[classtable.DemonsurgeSpiritBurstBuff].up and (can_spburst or SoulFragments >= 4 or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SpiritBomb].ready then
         if not setSpell then setSpell = classtable.SpiritBomb end
     end
     if (MaxDps:CheckSpellUsable(classtable.SoulCleave, 'SoulCleave')) and (buff[classtable.DemonsurgeSoulSunderBuff].up and (not buff[classtable.DemonsurgeSpiritBurstBuff].up or (buff[classtable.MetamorphosisBuff].remains<(gcd * 2)))) and cooldown[classtable.SoulCleave].ready then
@@ -553,7 +553,7 @@ function Vengeance:metamorphosis()
     if (MaxDps:CheckSpellUsable(classtable.SigilofFlame, 'SigilofFlame')) and (buff[classtable.MetamorphosisBuff].remains<((2 - (talents[classtable.QuickenedSigils] and talents[classtable.QuickenedSigils] or 0))+(cooldown[classtable.SigilofFlame].charges * gcd))) and cooldown[classtable.SigilofFlame].ready then
         if not setSpell then setSpell = classtable.SigilofFlame end
     end
-    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (soul_fragments.active <= 3 and (SoulFragments >= 2 or (MaxDps.spellHistory[1] == classtable.SigilofSpite))) and cooldown[classtable.FelDevastation].ready then
+    if (MaxDps:CheckSpellUsable(classtable.FelDevastation, 'FelDevastation')) and (SoulFragments <= 3 and (SoulFragments >= 2 or (MaxDps.spellHistory[1] == classtable.SigilofSpite))) and cooldown[classtable.FelDevastation].ready then
         if not setSpell then setSpell = classtable.FelDevastation end
     end
     if (MaxDps:CheckSpellUsable(classtable.Felblade, 'Felblade')) and (((cooldown[classtable.SigilofSpite].remains <timeShift or cooldown[classtable.SoulCarver].remains <timeShift) and cooldown[classtable.FelDevastation].remains<(timeShift + gcd) and Fury <50)) and cooldown[classtable.Felblade].ready then
@@ -699,7 +699,7 @@ function DemonHunter:Vengeance()
     --end
     classtable.DemonSpikesBuff = 203819
     classtable.MetamorphosisBuff = 162264
-    classtable.InnerResilienceBuff = 450706
+    classtable.InnerResilienceBuff = 450720
     classtable.RendingStrikeBuff = 442442
     classtable.GlaiveFlurryBuff = 442435
     classtable.ReaversGlaiveBuff = 442294
