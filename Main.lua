@@ -22,6 +22,9 @@ function DemonHunter:Enable()
 	elseif MaxDps.Spec == 2 then
 		MaxDps.NextSpell = DemonHunter.Vengeance
 		MaxDps:Print(MaxDps.Colors.Info .. 'DemonHunter - Vengeance', "info")
+	elseif MaxDps.Spec == 3 then
+		MaxDps.NextSpell = DemonHunter.Devourer
+		MaxDps:Print(MaxDps.Colors.Info .. 'DemonHunter - Devourer', "info")
 	end
 
 	return true
