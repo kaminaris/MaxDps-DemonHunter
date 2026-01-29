@@ -17,3 +17,4 @@
 Main.lua
 Specialization\Havoc.lua
 Specialization\Vengeance.lua
+Specialization\Devourer.lua
