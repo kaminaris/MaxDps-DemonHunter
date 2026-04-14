@@ -3,6 +3,8 @@ local DemonHunter = addonTable.DemonHunter
 local MaxDps = _G.MaxDps
 if not MaxDps then return end
 
+local GetItemCooldown = C_Item.GetItemCooldown
+
 local Devourer  = {}
 
 function DemonHunter:Devourer()
