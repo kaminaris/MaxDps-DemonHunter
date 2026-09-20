@@ -5,6 +5,7 @@ if not MaxDps then return end
 
 local GetItemCooldown = C_Item.GetItemCooldown
 local usedTrinkets = {}
+local aurasSetup = true
 
 local Devourer  = {}
 
